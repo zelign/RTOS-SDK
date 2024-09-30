@@ -1,0 +1,4 @@
+.vscode/
+output/
+*.code-workspace
+.DS_Store

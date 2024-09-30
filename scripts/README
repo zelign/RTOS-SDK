@@ -1,0 +1,6 @@
+The procudure of script:
+`source ./scripts/select_prj.sh`
+(1) select_prj.sh: call scan_dir.sh
+(2) scan_dir.sh:get all directories and print them.
+make build
+(1) build.sh: compile all products 
