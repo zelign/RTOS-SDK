@@ -12,7 +12,9 @@
 #include "nvic.h"
 #include "exti.h"
 #include "usart.h"
+#include "../output/config.h"
 #include "FreeRTOS.h"
+#include "spi.h"
 #include "task.h"
 
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
@@ -21,9 +23,18 @@ void basic_server(void *par)
 {
 	(void)par;
 	app_init();
+#ifdef CONFIG_LED
 	led_init(LED_RED, SET);
+    led_light(LED_RED);
+#endif
+
+#ifdef CONFIG_KEY
 	key_init(KEY_PORT_UP);
-	led_light(LED_RED);
+#endif
+
+#ifdef CONFIG_SPI
+    // spi_init();
+#endif // CONFIG_SPI
 	exti_init_gpio(INT_EXT0, EMPT_1_SUB_3, 0, 2, KEY_PORT_UP, KEY_UP_PIN_UP, DISABLE, ENABLE, ENABLE);
 	sm_printf("Welcome to the MicroSDK!\n");
 	vTaskDelete(NULL);

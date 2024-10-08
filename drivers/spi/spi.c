@@ -95,6 +95,3 @@ void spi_init(enum spi_dev sd, enum trans_direct_type tdt, enum data_frame_forma
     clock_polarity_phase(sd, cpp);
     spi_enable(sd, ENABLE);
 }
-#ifdef CONFIG_SPI
-BOOT_INIT_3(spi_init);
-#endif

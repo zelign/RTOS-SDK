@@ -121,9 +121,26 @@ define get_find_dir
 	endif	
 endef
 
-define config_macro
+define config_h_start
+	@if [ ! -f $(PRJ_ROOT_DIR)/output/config.h ]; then \
+		printf "#ifndef __CONFIG_H__\n" >> $(PRJ_ROOT_DIR)/output/config.h; \
+		printf "#define __CONFIG_H__\n" >> $(PRJ_ROOT_DIR)/output/config.h; \
+		printf "\n" >> $(PRJ_ROOT_DIR)/output/config.h; \
+	else \
+		rm -f $(PRJ_ROOT_DIR)/output/config.h; \
+		printf "#ifndef __CONFIG_H__\n" >> $(PRJ_ROOT_DIR)/output/config.h; \
+		printf "#define __CONFIG_H__\n" >> $(PRJ_ROOT_DIR)/output/config.h; \
+		printf "\n" >> $(PRJ_ROOT_DIR)/output/config.h; \
+	fi
+endef
+
+define config_h_end
+	@ printf "#endif\n" >>$(PRJ_ROOT_DIR)/output/config.h
+endef
+
+define config_h
 	@ echo -e "$(CYAN)$(BOLD)Genarete$(END) $(GREEN)config.h$(END) $(CYAN)$(BOLD)from$(END) $(GREEN)$(CFG_FILE)$(END)"
-	@printf "#define$(subst  ,,$(1))\n" >>$(CURDIR)/output/config.h
+	@ printf "#define$(subst  ,,$(1))\n" >>$(PRJ_ROOT_DIR)/output/config.h
 endef
 
 $(foreach line,$(CFG_FILE_LINE),$(eval $(call process_line,$(line))))
@@ -172,7 +189,9 @@ config.mk:
 	$(Q) echo "BUILD_SOURCE := " >> $(BUILD_OUT)/config.mk
 
 config.h:
-	$(foreach line,$(DRV_CFG),$(call config_macro, $(line)))
+	$(call config_h_start)
+	$(foreach line,$(DRV_CFG),$(call config_h, $(line)))
+	$(call config_h_end)
 
 build_obj_first: config.mk config.h $(BUILD_OBJ_DIR)
 

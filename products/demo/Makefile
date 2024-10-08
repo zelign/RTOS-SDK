@@ -26,7 +26,8 @@ C_INCLUDES := -I$(INCLUDE_DIR) \
 			  -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS \
 			  -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/include \
 			  -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F \
-			  -I$(DRV_INCLUDES)
+			  -I$(DRV_INCLUDES) \
+			  -I$(PRJ_ROOT_DIR)/output
 
 C_FLAGS += $(MCU_PARA) $(C_DEFS) $(C_INCLUDES) -Og -Wall -fdata-sections -ffunction-sections
 DEMO_OBJ_DIR := $(BUILD_OUT)
