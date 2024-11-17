@@ -53,7 +53,7 @@ void gpio_port_set(enum gpio_reg GPIO,
 }
 
 void gpio_pin_cfg(enum gpio_reg GPIO, enum gpio_pin pin, enum gpio_set gset)
-{
+{ 
     if (gset)
         *((uint32_t volatile *)(GPIO_BASE_ADDR + GPIO + BSRR)) |= (1 << pin);
     else

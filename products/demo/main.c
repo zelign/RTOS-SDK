@@ -17,6 +17,12 @@
 #include "spi.h"
 #include "task.h"
 
+#ifdef CONFIG_SPI
+#ifdef CONFIG_BY25Q64AS
+#include "flash.h"
+#endif
+#endif
+
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
 
 void basic_server(void *par)
@@ -33,8 +39,10 @@ void basic_server(void *par)
 #endif
 
 #ifdef CONFIG_SPI
-    // spi_init();
-#endif // CONFIG_SPI
+#ifdef CONFIG_BY25Q64AS
+    spi_1_by25q64as_init();
+#endif
+#endif
 	exti_init_gpio(INT_EXT0, EMPT_1_SUB_3, 0, 2, KEY_PORT_UP, KEY_UP_PIN_UP, DISABLE, ENABLE, ENABLE);
 	sm_printf("Welcome to the MicroSDK!\n");
 	vTaskDelete(NULL);

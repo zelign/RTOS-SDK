@@ -30,14 +30,14 @@ extern unsigned char _apb2_frq;
 
 enum gpio_reg {
     GPIOA = 0x0,
-    GPIOB = 0x400,
-    GPIOC = 0x800,
-    GPIOD = 0xc00,
-    GPIOE = 0x1000,
-    GPIOF = 0x1400,
-    GPIOG = 0x1800,
-    GPIOH = 0x1c00,
-    GPIOI = 0x2000,
+    GPIOB = 0x00000400,
+    GPIOC = 0x00000800,
+    GPIOD = 0x00000c00,
+    GPIOE = 0x00001000,
+    GPIOF = 0x00001400,
+    GPIOG = 0x00001800,
+    GPIOH = 0x00001c00,
+    GPIOI = 0x00002000,
 };
 
 enum gpio_pin {
@@ -112,11 +112,20 @@ enum gpio_afr {
 /* Define periphral base address */
 #define PERIPHRAL_BASE_ADDR (uint32_t)0x40000000
 
+/* Define APB1 bus address */
+#define APB1_BASE_ADDR  (PERIPHRAL_BASE_ADDR)
+
 /* Define APB2 bus address */
 #define APB2_BASE_ADDR	(PERIPHRAL_BASE_ADDR + 0x10000)
 
 /* Define AHB1 bus address */
 #define AHB1_BASE_ADDR  (PERIPHRAL_BASE_ADDR + 0x20000)
+
+/* Define AHB2 bus address */
+#define AHB2_BASE_ADDR  (PERIPHRAL_BASE_ADDR + 0x10000000)
+
+/* Define AHB3 bus address */
+#define AHB3_BASE_ADDR  (PERIPHRAL_BASE_ADDR + 0x20000000)
 
 /**************************************GPIO Registers**************************************/
 /* Define GPIO base address */
@@ -146,6 +155,31 @@ enum gpio_afr {
 #define GPIO_A_AFRL     *(volatile uint32_t *)(GPIO_A_BASE_ADDR + AFRL)
 /* port alternate function high register */
 #define GPIO_A_AFRH     *(volatile uint32_t *)(GPIO_A_BASE_ADDR + AFRH)
+
+
+#define GPIO_B_BASE_ADDR    (GPIO_BASE_ADDR + (unsigned int)GPIOB)
+/************** Define GPIO_B registers **************/
+/* port mode register */
+#define GPIO_B_MODER    *(volatile uint32_t *)(GPIO_B_BASE_ADDR + MODER)
+/* port output type register */
+#define GPIO_B_OTYPER   *(volatile uint32_t *)(GPIO_B_BASE_ADDR + OTYPER)
+/* port output speed register */
+#define GPIO_B_OSPEEDR  *(volatile uint32_t *)(GPIO_B_BASE_ADDR + OSPEEDER)
+/* port pull-up/pull-down register */
+#define GPIO_B_PUPDR    *(volatile uint32_t *)(GPIO_B_BASE_ADDR + PUPDR)
+/* port input data register */
+#define GPIO_B_IDR      *(volatile uint32_t *)(GPIO_B_BASE_ADDR + IDR)
+/* port output data register */
+#define GPIO_B_ODR      *(volatile uint32_t *)(GPIO_B_BASE_ADDR + ODR)
+/* port bit set/reset register */
+#define GPIO_B_BSRR     *(volatile uint32_t *)(GPIO_B_BASE_ADDR + BSRR)
+/* port configuration lock register */
+#define GPIO_B_LCKR     *(volatile uint32_t *)(GPIO_B_BASE_ADDR + LCKR)
+/* port alternate function low register */
+#define GPIO_B_AFRL     *(volatile uint32_t *)(GPIO_B_BASE_ADDR + AFRL)
+/* port alternate function high register */
+#define GPIO_B_AFRH     *(volatile uint32_t *)(GPIO_B_BASE_ADDR + AFRH)
+
 
 /* Define GPIO_E base address */
 #define GPIO_E_BASE_ADDR  (GPIO_BASE_ADDR + GPIOE)
@@ -425,10 +459,15 @@ enum usart_stop_bit {
 /********************************SPI*********************************/
 //SPI1
 #define SPI1_BASE_ADDR  (APB2_BASE_ADDR + 0x3000)
+#define SPI2_BASE_ADDR  (APB1_BASE_ADDR + 0x3800)
+#define SPI3_BASE_ADDR  (APB1_BASE_ADDR + 0x3C00)
+#define SPI4_BASE_ADDR  (APB2_BASE_ADDR + 0x3400)
+
 enum spi_dev {
     SPI_1 = SPI1_BASE_ADDR,
-    SPI_2,
-    SPI_3,
+    SPI_2 = SPI2_BASE_ADDR,
+    SPI_3 = SPI3_BASE_ADDR,
+    SPI_4 = SPI4_BASE_ADDR,
 };
 
 //spi control register
@@ -471,7 +510,12 @@ enum software_slave_management_e {
     enable_software_management,
 };
 
-enum frame_format_e {
+enum rev_mode {
+    duplex = 0,
+    rx_only,
+};
+
+enum lsb_first_e {
     first_msb = 0,
     first_lsb,
 };
@@ -488,8 +532,8 @@ enum baud_rate_control_e {
 };
 
 enum master_selection_e {
-    master_mode = 0,
-    slave_mode,
+    slave_mode = 0,
+    master_mode,
 };
 
 enum clock_polarity_phase_e {
@@ -497,6 +541,11 @@ enum clock_polarity_phase_e {
     free_lower_second_edge_sample,
     free_higher_first_edge_sample,
     free_higher_second_dege_sample,
+};
+
+enum frame_format_e {
+    motorola_mode = 0,
+    ti_mode = 1,
 };
 
 
