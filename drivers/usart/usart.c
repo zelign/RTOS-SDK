@@ -12,7 +12,7 @@
 #include "../../output/config.h"
 
 #define RECEIVE_SIZE 128
-#define ENABLE_USART1_INT 1
+// #define ENABLE_USART1_INT 1
 
 static char receive_array[RECEIVE_SIZE];
 
@@ -60,7 +60,6 @@ static inline void word_length(enum word_length wl)
 
 static inline void usart_pin_ctl(enum gpio_reg gpio, enum gpio_pin pin, enum gpio_afr afr, enum gpio_moder moder)
 {
-    // pin_afr(gpio, pin, afr);
     gpio_port_set(gpio, pin, moder, PUSH, GPIO_50MHZ, UP_PULL); 
 }
 
@@ -95,7 +94,7 @@ void usart1_init()
     oversamping_mode(over_16);
     word_length(word_length_8);
     set_stop_bit(STOP_1);
-    set_baud_rate(115200);
+    set_baud_rate(9600);
 
     USART1_DISABLE_PARITY;
     USART1_ENABLE_RE;
@@ -119,7 +118,7 @@ void usart1_init()
 void putc_usart1(char c)
 {
     while(((USART1_SR & 0x80) == 0));
-    USART1_DR = (c & 0x1ff);   
+    USART1_DR = (c & 0xff);   
 }
 
 void put32_usart1(int i)
@@ -142,10 +141,15 @@ void puts_usart1(char *s)
     while(((USART1_SR >> 6) & 0x1) != TRUE);
 }
 
-static inline unsigned short getc_usart1 (void)
+char getc_usart1_loop (bool *flag)
 {
-    while((((USART1_SR >> 4) & 1) != TRUE) || (((USART1_SR >> 5) & 1) != TRUE));
-    return USART1_DR & (0x1ff);
+    // while ((((USART1_SR >> 4) & 1) != TRUE) || (((USART1_SR >> 5) & 1) != TRUE));
+    if (((USART1_SR >> 5) & 1) != TRUE) {
+        *flag = FALSE;
+        return 0;
+    }
+    *flag = TRUE;
+    return USART1_DR & (0xff);
 }
 
 #ifndef ENABLE_USART1_INT
@@ -169,6 +173,12 @@ char *gets_usart1 (void)
 
 #else
 
+static inline unsigned short getc_usart1 (void)
+{
+    while((((USART1_SR >> 4) & 1) != TRUE) || (((USART1_SR >> 5) & 1) != TRUE));
+    return USART1_DR & (0x1ff);
+}
+
 char *gets_usart1(void)
 {
     while(!usart1_t.getc_flag);
@@ -179,10 +189,6 @@ char *gets_usart1(void)
 
 void USART1_IRQHandler(void)
 {
-
-    // set_privilege_level(FALSE);
-    // get_privilege_level();
-    // get_sp_mode();
     if (((USART1_SR >> 5) & 1)) {
         receive_array[usart1_t.index++] = USART1_DR;
     }

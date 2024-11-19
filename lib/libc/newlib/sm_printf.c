@@ -45,7 +45,6 @@ void sm_printf(const char *fmt, ...)
 	char ch;
 	unsigned char para_flag = 0;
 	int fmt_len = strlen(fmt);
-
 	char str_data[20];
 	va_list args;
 
@@ -73,7 +72,8 @@ void sm_printf(const char *fmt, ...)
 			putc_usart1(*cc);
 		} else if (ch == 's' || ch == 'S') {
 			char *str = va_arg(args, char *);
-			while (*str != '\0') {
+			unsigned int str_len = strlen(str);
+			while (str_len--) {
 				putc_usart1(*str);
 				str++;
 			}

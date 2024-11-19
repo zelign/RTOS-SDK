@@ -55,6 +55,7 @@ typedef long long int64_t;
 #endif
 
 char *gets_usart1(void);
+char getc_usart1_loop (bool *flag);
 void putc_usart1(char c);
 void puts_usart1(char *s);
 void *pvPortMalloc(size_t xWantedSize);
@@ -75,5 +76,6 @@ void exit_error(void);
 void app_init(void);
 
 void sm_printf(const char *fmt, ...);
+void cli_console_init(void);
 
 #endif

@@ -45,6 +45,7 @@ void basic_server(void *par)
 #endif
 	exti_init_gpio(INT_EXT0, EMPT_1_SUB_3, 0, 2, KEY_PORT_UP, KEY_UP_PIN_UP, DISABLE, ENABLE, ENABLE);
 	sm_printf("Welcome to the MicroSDK!\n");
+    cli_console_init();
 	vTaskDelete(NULL);
 }
 
@@ -92,18 +93,18 @@ int main(int c, char *argv[])
                 NULL,
                 configMAX_PRIORITIES - 1,
                 NULL);
-	xTaskCreate( test1,
-                "test1",
-                configMINIMAL_STACK_SIZE,
-                NULL,
-                configMAX_PRIORITIES - 2,
-                NULL);
-    xTaskCreate( test2,
-                "test2",
-                configMINIMAL_STACK_SIZE,
-                NULL,
-                configMAX_PRIORITIES - 3,
-                NULL);
+	// xTaskCreate( test1,
+    //             "test1",
+    //             configMINIMAL_STACK_SIZE,
+    //             NULL,
+    //             configMAX_PRIORITIES - 2,
+    //             NULL);
+    // xTaskCreate( test2,
+    //             "test2",
+    //             configMINIMAL_STACK_SIZE,
+    //             NULL,
+    //             configMAX_PRIORITIES - 3,
+    //             NULL);
 
     /* Start the scheduler. */
     sm_printf("Start Task Schedule!\n");
