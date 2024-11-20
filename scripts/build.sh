@@ -31,49 +31,49 @@ function build_all() {
 	popd > /dev/null
 }
 
-function package_target_verify() {
-	print_bold YELLOW "[1] START VERIFY PACKAGE TARGET"
-	j=1
-	while IFS= read -r LINE; do
-		if [ $j == $CHOICE_PACKAGE ]; then
-			PACKAGE_ARRY=$(echo "$LINE" | tr ' ' ' ')
-			break	
-		fi
-		j=$[$j + 1]
-	done <$PACKAGE_COMBINATION
+# function package_target_verify() {
+# 	print_bold YELLOW "[1] START VERIFY PACKAGE TARGET"
+# 	j=1
+# 	while IFS= read -r LINE; do
+# 		if [ $j == $CHOICE_PACKAGE ]; then
+# 			PACKAGE_ARRY=$(echo "$LINE" | tr ' ' ' ')
+# 			break	
+# 		fi
+# 		j=$[$j + 1]
+# 	done <$PACKAGE_COMBINATION
 
-	if [ -z "$PACKAGE_ARRY" ]; then
-		echo -e "\033[41;33m Package list is not set, please execute source \"scripts/select_prj.sh\"\033[0m"
-	fi
-	j=0
-	for temp in ${PACKAGE_ARRY[@]}; do
-		if [ $j == 1 ]; then
-			arch=$temp
-		elif [ $j == 2 ]; then
-			board=$temp
-		elif [ $j == 3 ]; then
-			mcu=$temp
-		elif [ $j == 4 ]; then
-			product=$temp
-		fi
-		j=$[$j + 1]
-	done
-	case ${product} in
-		'demo')
-			#read prj.cfg file to output/package/arch-board-mcu-product/build/config.h
-			;;
-		*)
-			echo "Unsupported product type:${product}"
-			exit 1
-			;;
-	esac
-	BUILD_START=1
-	ARCHS=$arch
-	MCUS=$mcu
-	BOARDS=$board
-	PRODUCTS=$product
-	echo -e "\033[34m$ARCHS $MCUS $BOARDS $PRODUCTS \033[0m"
-}
+# 	if [ -z "$PACKAGE_ARRY" ]; then
+# 		echo -e "\033[41;33m Package list is not set, please execute source \"scripts/select_prj.sh\"\033[0m"
+# 	fi
+# 	j=0
+# 	for temp in ${PACKAGE_ARRY[@]}; do
+# 		if [ $j == 1 ]; then
+# 			arch=$temp
+# 		elif [ $j == 2 ]; then
+# 			board=$temp
+# 		elif [ $j == 3 ]; then
+# 			mcu=$temp
+# 		elif [ $j == 4 ]; then
+# 			product=$temp
+# 		fi
+# 		j=$[$j + 1]
+# 	done
+# 	case ${product} in
+# 		'demo')
+# 			#read prj.cfg file to output/package/arch-board-mcu-product/build/config.h
+# 			;;
+# 		*)
+# 			echo "Unsupported product type:${product}"
+# 			exit 1
+# 			;;
+# 	esac
+# 	BUILD_START=1
+# 	ARCHS=$arch
+# 	MCUS=$mcu
+# 	BOARDS=$board
+# 	PRODUCTS=$product
+# 	echo -e "\033[34m$ARCHS $MCUS $BOARDS $PRODUCTS \033[0m"
+# }
 
 
 function package_env_config(){
@@ -115,7 +115,8 @@ function package_env_config(){
 	BUILD_CLEAN=1
 }
 
-package_target_verify
+print_bold YELLOW "[1] VERIFIED PACKAGE TARGET SUCCEED"
+echo -e "\033[34m$ARCHS $MCUS $BOARDS $PRODUCTS \033[0m"
 package_env_config $BOARDS $ARCHS
 
 export COMPILER TOOLCHAIN_SRC TOOLCHAIN_OUT COMPILER_KEYWORD ARCHS BOARDS MCUS PRODUCTS DO_BUILD_SH

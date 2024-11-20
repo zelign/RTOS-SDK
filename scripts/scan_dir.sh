@@ -10,6 +10,8 @@ PWD=$(pwd) #root directory
 
 #search all of directories from /arch to get architecture types.
 echo "pwd=$PWD"
+source $PWD/scripts/print.sh
+
 ARCHS=$(find $PWD/arch -mindepth 1 -maxdepth 1 -type d ! -name ".*" | xargs basename -a | sort)
 ARCHS_BOARDS=$(find $PWD/boards -mindepth 1 -maxdepth 1 -type d ! -name ".*" | xargs basename -a | sort)
 PRODUCTS=$(find $PWD/products -mindepth 1 -maxdepth 1 -type d ! -name ".*" | xargs basename -a | sort)
@@ -50,3 +52,48 @@ done
 read -p "Choice your project:" CHOICE_PACKAGE
 
 export CHOICE_PACKAGE
+
+function package_target_verify() {
+	j=1
+	while IFS= read -r LINE; do
+		if [ $j == $CHOICE_PACKAGE ]; then
+			PACKAGE_ARRY=$(echo "$LINE" | tr ' ' ' ')
+			break	
+		fi
+		j=$[$j + 1]
+	done <$PACKAGE_COMBINATION
+
+	if [ -z "$PACKAGE_ARRY" ]; then
+		echo -e "\033[41;33m Package list is not set, please execute source \"scripts/select_prj.sh\"\033[0m"
+	fi
+	j=0
+	for temp in ${PACKAGE_ARRY[@]}; do
+		if [ $j == 1 ]; then
+			arch=$temp
+		elif [ $j == 2 ]; then
+			board=$temp
+		elif [ $j == 3 ]; then
+			mcu=$temp
+		elif [ $j == 4 ]; then
+			product=$temp
+		fi
+		j=$[$j + 1]
+	done
+	case ${product} in
+		'demo')
+			#read prj.cfg file to output/package/arch-board-mcu-product/build/config.h
+			;;
+		*)
+			echo "Unsupported product type:${product}"
+			exit 1
+			;;
+	esac
+	BUILD_START=1
+	ARCHS=$arch
+	MCUS=$mcu
+	BOARDS=$board
+	PRODUCTS=$product
+}
+
+package_target_verify
+export ARCHS BOARDS MCUS PRODUCTS

@@ -24,7 +24,6 @@
 #Specify the location where store shell tool.
 SHELL := /bin/bash
 
-
 #get current path
 CURDIR := $(PWD)
 
@@ -200,6 +199,10 @@ clean:
 
 dist:
 	$(Q) rm -rfv $(OUTPUT_DIR)
+$(warning ${ARCHS})
+export KCONFIG_CONFIG := ./output/${ARCHS}-${BOARDS}-${MCUS}-${PRODUCTS}/packages/.config
+menuconfig:
+	python3 ./scripts/menuconfig.py
 
 .PHONY: $(BUILD_OBJ_DIR) toolchain build clean
 
