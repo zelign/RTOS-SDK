@@ -73,7 +73,6 @@ void cli_executor_loop( void *para )
             if (cli_read == '\n') {
                 if (!strncmp(&cli_read_buf[0], "help", 4)) {
                     FreeRTOS_CLIProcessCommand("help", NULL, 0);
-                    vTaskGetRunTimeStats();
                     memset(&cli_read_buf[0], 0, 64);
                     rbuf = &cli_read_buf[0];
                 }
