@@ -285,7 +285,7 @@ static const CLI_Definition_List_Item_t * pxCommand = NULL;
 BaseType_t xReturn = pdTRUE;
 
 	( void ) pcCommandString;
-
+	sm_printf("\n");
 	for (pxCommand = &xRegisteredCommands; pxCommand != NULL; pxCommand = pxCommand->pxNext)
 		sm_printf("%s\t", pxCommand->pxCommandLineDefinition->pcCommand);
 	sm_printf("\n");
