@@ -37,7 +37,7 @@ void by25q64as_page_program(enum spi_dev sd, unsigned char *address, void *data,
     unsigned char page_program_cmd = 0x02;
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
     if (*address & 0xff) {
-        printf("Please alignment the address to page band (0x100)\n");
+        sm_printf("Please alignment the address to page band (0x100)\n");
         return;
     }
     if (! spi_chk_buy(sd)) {
@@ -61,7 +61,7 @@ void by25q64as_read_dara(enum spi_dev sd, unsigned char *address, unsigned char 
 
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
     if (*address & 0xff) {
-        printf("Please alignment the address to page band (0x100)\n");
+        sm_printf("Please alignment the address to page band (0x100)\n");
         return;
     }
     if (! spi_chk_buy(sd)) {
@@ -153,32 +153,32 @@ void spi_1_by25q64as_init(void)
     struct flash_info *f = &flash_informations[0];
     for (unsigned int i = 0; i < sizeof(flash_informations)/sizeof(struct flash_info); i++) {
         if (f->dev_id == temp) {
-            printf("----------------------------%s----------------------------\n", f->dev_name);
-            printf("Chip Size: %dKB\n", f->chip_size);
-            printf("Flash ID: 0X%X\n", temp);
-            printf("Block Size: %dKB\n", f->block_size);
-            printf("Sector Size: %dKB\n", f->sector_size);
-            printf("Block Num: %d\n", f->block_num);
-            printf("Sector Num: %d\n", f->sector_num);
+            sm_printf("----------------------------%s----------------------------\n", f->dev_name);
+            sm_printf("Chip Size: %dKB\n", f->chip_size);
+            sm_printf("Flash ID: 0X%X\n", temp);
+            sm_printf("Block Size: %dKB\n", f->block_size);
+            sm_printf("Sector Size: %dKB\n", f->sector_size);
+            sm_printf("Block Num: %d\n", f->block_num);
+            sm_printf("Sector Num: %d\n", f->sector_num);
         } else {
-            printf("There have not a device named BY25Q64AS\n");
+            sm_printf("There have not a device named BY25Q64AS\n");
         }
         f++;
     }
 
-    printf("***********BY25Q64AS page program test***********\n");
-    printf("Write: BY25Q64AS len %d\n", strlen(FLASH_NAME));
+    sm_printf("***********BY25Q64AS page program test***********\n");
+    sm_printf("Write: BY25Q64AS len %d\n", strlen(FLASH_NAME));
     test_adr[0] = 0x0;
     test_adr[1] = 0x1;
     test_adr[2] = 0x0;
 
     by25q64as_write_enable();
     by25q64as_page_program(SPI_1, test_adr, FLASH_NAME, strlen(FLASH_NAME));
-    printf("***********BY25Q64AS read data test***********\n");
+    sm_printf("***********BY25Q64AS read data test***********\n");
     read_data = (unsigned char *)malloc(strlen(FLASH_NAME));
     memset(read_data, 0, strlen(FLASH_NAME));
     by25q64as_read_dara(SPI_1, test_adr, read_data, strlen(FLASH_NAME));
-    printf("Read data: %s len %d\n", read_data, strlen(FLASH_NAME));
+    sm_printf("Read data: %s len %d\n", read_data, strlen(FLASH_NAME));
 }
 #endif
 #endif // CONFIG_BY25Q64AS

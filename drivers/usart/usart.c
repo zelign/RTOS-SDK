@@ -111,7 +111,7 @@ void usart1_init()
     USART1_CR3 &= 0;
     USART1_ENABLE_UE;
 
-    printf("Uart 1 intialize successful!\n");
+    sm_printf("\nUart 1 intialize successful!\n");
    
 }
 

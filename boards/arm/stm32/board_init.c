@@ -22,7 +22,7 @@ void app_init(void)
 {
     put32_usart1(get_sp_reg());
     initcall_app_init();
-	puts_usart1("App initial!");
+	sm_printf("App initial!\n");
 }
 
 
