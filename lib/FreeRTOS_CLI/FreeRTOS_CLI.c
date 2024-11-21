@@ -282,31 +282,13 @@ const char *pcReturn = NULL;
 static BaseType_t prvHelpCommand( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
 static const CLI_Definition_List_Item_t * pxCommand = NULL;
-BaseType_t xReturn;
+BaseType_t xReturn = pdTRUE;
 
 	( void ) pcCommandString;
 
-	if( pxCommand == NULL )
-	{
-		/* Reset the pxCommand pointer back to the start of the list. */
-		pxCommand = &xRegisteredCommands;
-	}
-
-	/* Return the next command help string, before moving the pointer on to
-	the next command in the list. */
-	strncpy( pcWriteBuffer, pxCommand->pxCommandLineDefinition->pcHelpString, xWriteBufferLen );
-	pxCommand = pxCommand->pxNext;
-
-	if( pxCommand == NULL )
-	{
-		/* There are no more commands in the list, so there will be no more
-		strings to return after this one and pdFALSE should be returned. */
-		xReturn = pdFALSE;
-	}
-	else
-	{
-		xReturn = pdTRUE;
-	}
+	for (pxCommand = &xRegisteredCommands; pxCommand != NULL; pxCommand = pxCommand->pxNext)
+		sm_printf("%s\t", pxCommand->pxCommandLineDefinition->pcCommand);
+	sm_printf("\n");
 
 	return xReturn;
 }
