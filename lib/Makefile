@@ -35,8 +35,7 @@ CLI_OBJ_DIR := $(BUILD_OUT)
 
 LIBC_OBJ = $(addprefix $(LIBC_OBJ_DIR)/, $(notdir $(LIB_C_FILE:.c=.o)))
 CLI_OBJ = $(addprefix $(CLI_OBJ_DIR)/, $(notdir $(CLI_C_FILE:.c=.o)))
-$(warning "LIBC_OBJ: ${LIBC_OBJ}")
-$(warning "CLI_OBJ: ${CLI_OBJ}")
+
 #define obj file path
 BUILD_SOURCE += $(LIBC_OBJ) $(CLI_OBJ)
 

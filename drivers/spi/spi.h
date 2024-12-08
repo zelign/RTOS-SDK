@@ -4,6 +4,7 @@
 #include "system.h"
 #include "board_init.h"
 #include "../../output/config.h"
+#include "gpio.h"
 
 #define SPI_CRCPR_Default                           0x7
 #define SPI1_CLK_ENABLE                             ((RCC_APB2ENR) |= (0x1 << 12))
@@ -13,6 +14,16 @@
 #define SPI_DATA_FRAME_FORMAT_CHECK_MASK            (0x0800)
 
 void spi_enable(enum spi_dev sd, bool b);
+
+inline void spi_reuse_cfg(enum gpio_reg GPIO,
+                                enum gpio_pin pin,
+                                enum gpio_moder moder,
+                                enum gpio_otype oty,
+                                enum gpio_speed speed,
+                                enum gpio_uppull pull)
+{
+    gpio_port_set(GPIO, pin, moder, oty, speed, pull);
+}
 
 /**
  * @brief 

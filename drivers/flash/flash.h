@@ -18,11 +18,30 @@ struct flash_info {
     unsigned int dev_id;
     unsigned int chip_size; //KB
     unsigned int block_size; //KB
-    unsigned sector_size; //KB
-    unsigned char block_num;
-    unsigned char sector_num;
+    unsigned char sector_size; //KB
+    unsigned char page_num;
 };
 
+struct flash_partition {
+    char *name;
+    unsigned int offset;
+    unsigned int size;
+};
+
+#define PAGE_PROGRAM(sd, cmd, add, src, src_len, function) \
+        function(sd, &cmd); \
+        cmd = (unsigned char)(add >> 16); \
+        function(sd, &cmd); \
+        cmd = (unsigned char)(add >> 8); \
+        function(sd, &cmd); \
+        cmd = (unsigned char)(add >> 0); \
+        function(sd, &cmd); \
+        for (unsigned int i = 0; i < src_len; i++){ \
+            function(sd, &src[i]); }
+#define ERASE_ALL(sd) \
+    sm_printf("Erase all chip ... \n"); \
+    by25q64as_chip_erase(sd); \
+    sm_printf("Over! \n"); \
 
 #ifdef CONFIG_BY25Q64AS
 
