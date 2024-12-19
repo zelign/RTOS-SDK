@@ -48,7 +48,7 @@
 #define configUSE_TICKLESS_IDLE                    0
 #define configMAX_PRIORITIES                       5U
 #define configMINIMAL_STACK_SIZE                   128U
-#define configCOMMAND_INT_MAX_OUTPUT_SIZE          32U
+#define configCOMMAND_INT_MAX_OUTPUT_SIZE          1//32U
 #define configMAX_TASK_NAME_LEN                    4U
 #define configTICK_TYPE_WIDTH_IN_BITS              TICK_TYPE_WIDTH_32_BITS
 #define configIDLE_SHOULD_YIELD                    1

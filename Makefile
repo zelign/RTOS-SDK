@@ -151,7 +151,12 @@ DRV_C_SRC_INCLUDES += $(DRV_INCLUDES) \
 					-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS)/$(MCUS) \
 					-I$(PRJ_ROOT_DIR)/lib/include \
 					-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/include \
-					-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/cortex-M4
+					-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/cortex-M4 \
+					-I$(PRJ_ROOT_DIR)/lib/FreeRTOS_CLI \
+					-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/include \
+					-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
+					-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F
+
 DRV_FLAGS += $(MCU_PARA) $(C_DEFS) $(DRV_C_SRC_INCLUDES) -Og -Wall -fdata-sections -ffunction-sections
 C_FLAGS := $(DRV_FLAGS) #$(WRAP_FLAGS)
 export C_FLAGS DRV_FIND_DIR DRV_FLAGS DRV_INCLUDES
@@ -199,7 +204,7 @@ clean:
 
 dist:
 	$(Q) rm -rfv $(OUTPUT_DIR)
-$(warning ${ARCHS})
+
 export KCONFIG_CONFIG := ./output/${ARCHS}-${BOARDS}-${MCUS}-${PRODUCTS}/packages/.config
 menuconfig:
 	python3 ./scripts/menuconfig.py

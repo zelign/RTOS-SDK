@@ -23,8 +23,6 @@
 #endif
 #endif
 
-uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
-
 void basic_server(void *par)
 {
 	(void)par;

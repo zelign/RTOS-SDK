@@ -29,6 +29,8 @@ C_INCLUDES = -I$(PRJ_ROOT_DIR)/lib/include \
 			-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/cortex-M4 \
 			-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/include \
 			-I$(PRJ_ROOT_DIR)/drivers/clock \
+			-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/include \
+			-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F
 
 C_FLAGS += $(MCU_PARA) $(C_DEFS) $(C_INCLUDES) -Og -Wall -fdata-sections -ffunction-sections
 

@@ -30,7 +30,6 @@
 
 PSP_Size = 0x4000;
 MSP_Size = 0x5000;
-Heap_Size = 0x2000;
 
 /* Point to the end of CCMRAM */
 _ccm_stack_start = ORIGIN(CCMRAM) + LENGTH(CCMRAM);
@@ -51,6 +50,7 @@ SECTIONS
 	.vector :
 	{
 		. = ALIGN(4);
+		PROVIDE(_flash_img_start = .);
 		_vector_start = .;
 		KEEP(*(.vector))
 		. = ALIGN(4);
@@ -60,9 +60,14 @@ SECTIONS
 	.text : 
 	{
 		. = ALIGN(4);
+		PROVIDE(_text_start = .);
 		*(.text)
 		*(.text*)
+		PROVIDE(_crti = .);
+		KEEP (*(.init))
+   		KEEP (*(.fini))
 		. = ALIGN(4);
+		PROVIDE(_text_end = .);
 	} >FLASH
 
 	.rodata : 
@@ -76,18 +81,20 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		_boot_init_start = .;
-		KEEP(*(.init_call.b1))
-		KEEP(*(.init_call.b2))
-		KEEP(*(.init_call.b3))
+		KEEP(*(.init_call.boot_1))
+		KEEP(*(.init_call.boot_2))
+		KEEP(*(.init_call.boot_3))
 		_boot_init_end = .;
         . = ALIGN(4);
 		_app_init_start = .;
-		KEEP(*(.init_call.a1))
-		KEEP(*(.init_call.a2))
-		KEEP(*(.init_call.a3))
+		KEEP(*(.init_call.application_1))
+		KEEP(*(.init_call.application_2))
+		KEEP(*(.init_call.application_3))
 		_app_init_end = .;
+		PROVIDE(_flash_img_end = .);
 		. = ALIGN(4);
 	} >FLASH
+
 
 	_data_start_load = LOADADDR(.data);
 	.data : 
@@ -151,7 +158,8 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		PROVIDE ( _heap_start = .);
-		. = . + Heap_Size;
+		_heap_len = ABSOLUTE(ORIGIN(RAM) + LENGTH(RAM) - _heap_start);
+		. += _heap_len;
 		. = ALIGN(4);
 		PROVIDE ( _heap_end = .);
 	} >RAM

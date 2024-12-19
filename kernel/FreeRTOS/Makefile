@@ -28,7 +28,7 @@ C_FLAGS += $(MCU_PARA) $(C_DEFS) $(C_INCLUDES) -Og -Wall -fdata-sections -ffunct
 KERNEL_ASM_FILE := $(wildcard $(KERNEL_DIR)/*.s)
 KERNEL_C_FILE := $(wildcard $(KERNEL_DIR)/*.c)
 KERNEL_C_FILE_F += $(wildcard $(KERNEL_DIR)/portable/GCC/ARM_CM4F/*.c)
-KERNEL_C_FILE_M += $(KERNEL_DIR)/portable/MemMang/heap_4.c
+KERNEL_C_FILE_M += $(KERNEL_DIR)/portable/MemMang/heap_5.c
 
 KERNEL_OBJ_DIR := $(BUILD_OUT)
 

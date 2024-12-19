@@ -19,8 +19,8 @@ C_DEFS =
 
 #define where to find the header files, it will increased as needed in future.
 C_INCLUDES = -I$(PRJ_ROOT_DIR)/lib/include \
-			 -I$(LIB_DIR)/ \
-			 -I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS)/ \
+			 -I$(LIB_DIR) \
+			 -I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
 			 -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/include \
 			 -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F
 

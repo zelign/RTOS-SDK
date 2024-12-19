@@ -45,12 +45,6 @@ one of the application files:
 	#define configAPPLICATION_PROVIDES_cOutputBuffer 0
 #endif
 
-typedef struct xCOMMAND_INPUT_LIST
-{
-	const CLI_Command_Definition_t *pxCommandLineDefinition;
-	struct xCOMMAND_INPUT_LIST *pxNext;
-} CLI_Definition_List_Item_t;
-
 /*
  * The callback function that is executed when "help" is entered.  This is the
  * only default command that is always present.
@@ -79,6 +73,11 @@ static CLI_Definition_List_Item_t xRegisteredCommands =
 	&xHelpCommand,	/* The first command in the list is always the help command, defined in this file. */
 	NULL			/* The next pointer is initialised to NULL, as there are no other registered commands yet. */
 };
+
+CLI_Definition_List_Item_t* get_registered_commands(void)
+{
+	return &xRegisteredCommands;
+}
 
 /* A buffer into which command outputs can be written is declared here, rather
 than in the command console implementation, to allow multiple command consoles

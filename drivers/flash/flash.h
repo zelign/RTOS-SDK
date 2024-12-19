@@ -16,10 +16,10 @@
 struct flash_info {
     const char *dev_name;
     unsigned int dev_id;
-    unsigned int chip_size; //KB
-    unsigned int block_size; //KB
-    unsigned char sector_size; //KB
-    unsigned char page_num;
+    unsigned int chip_size; //chip size(KB)
+    unsigned int block_size; //every block size(KB)
+    unsigned char sector_size; //every sector size(KB)
+    unsigned char page_num; //page numbers per sector
 };
 
 struct flash_partition {
@@ -45,8 +45,28 @@ struct flash_partition {
 
 #ifdef CONFIG_BY25Q64AS
 
+/* Flash commands defination */
+#define PAGE_PROGRAM_CMD    0x02
+#define FAST_PAGE_PROGRAM_CMD   0xF2
+#define WRITE_ENABLE_CMD    0x06
+#define WRITE_DISABLE_CMD   0x04
+
+#define READ_DATA_CMD       0x03
+#define FAST_READ_CMD       0x0B
+
+
+#define SECTOR_ERASE_CMD    0x20
+#define BLOCK_ERASE_CMD     0x52
+#define CHIP_ERASE_CMD      0xD8
+
+#define ENABLE_RESET_CMD        0x66
+#define RESET_CMD               0x99
+#define MANUFACTURER_CMD        0x90
+
 #define FLASH_NAME "BY25Q64AS"
+
 void spi_1_by25q64as_init(void);
+
 #endif // CONFIG_BY25Q64AS
 
 #endif
