@@ -44,7 +44,7 @@ build_prj: $(HEX_FILE)
 #BUILD_SOURCE, it define is top of this file.
 $(ELF_FILE): $(BUILD_SOURCE)
 	@ echo -e "$(GREEN)$(BOLD)*********************** START LINK ALL OBJ! ***********************$(END)"
-	$(CC) $(BUILD_SOURCE) $(LD_OPTION) -o $@
+	@ $(CC) $(BUILD_SOURCE) $(LD_OPTION) -o $@
 
 $(HEX_FILE): $(ELF_FILE)
 	@ $(CP) -O ihex $< $@
@@ -52,7 +52,7 @@ $(HEX_FILE): $(ELF_FILE)
 
 $(DEMO_C_OBJ): $(DEMO_SRC_FILE)
 	@ $(CC) $(C_FLAGS) -c $< -o $@
-	@ echo -e "$(GREEN)Compile $(DEMO_C_OBJ)$(END)"
+	@ echo -e "$(GREEN)Compile ${notdir $(DEMO_C_OBJ)} OK$(END)"
 	@ echo -e "	$(CYAN)Compile OK!$(END)"
 
 info:

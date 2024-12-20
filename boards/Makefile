@@ -31,7 +31,7 @@ BUILD_SOURCE += $(BOARD_C_OBJ)
 
 all: info $(BOARD_C_OBJ)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo -e "$(GREEN)Compile $(BOARD_C_OBJ)$(END)"
+	@ echo -e "$(GREEN)Compile ${notdir $(BOARD_C_OBJ)} OK$(END)"
 	@ echo -e "	$(CYAN)Compile OK!$(END)"
 info:
 	@ echo -e "$(YELLOW)$(BOLD)[6] INTO $(UNDERLINE)$(BOARD_DIR_SIGNED)$(END) $(YELLOW)$(BOLD)COMPILE...$(END)"

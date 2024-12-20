@@ -42,34 +42,11 @@ void basic_server(void *par)
 #endif
 #endif
 	exti_init_gpio(INT_EXT0, EMPT_1_SUB_3, 0, 2, KEY_PORT_UP, KEY_UP_PIN_UP, DISABLE, ENABLE, ENABLE);
-	sm_printf("Welcome to the MicroSDK!\n");
+	printf("Welcome to the MicroSDK!\n");
     cli_console_init();
 	vTaskDelete(NULL);
 }
 
-void test1(void *par)
-{
-	(void)par;
-	while (1) {
-        sm_printf("[test] %s\n", __func__);
-		led_off(LED_RED);
-		vTaskDelay(pdMS_TO_TICKS(100));
-	}
-
-	vTaskDelete(NULL);
-}
-
-void test2(void *par)
-{
-	(void)par;
-	while (1) {
-        sm_printf("[test] %s\n", __func__, __LINE__);
-		vTaskDelay(pdMS_TO_TICKS(200));
-        led_light(LED_RED);
-	}
-
-	vTaskDelete(NULL);
-}
 
 int main(int c, char *argv[])
 {
@@ -80,32 +57,20 @@ int main(int c, char *argv[])
 	key_init(KEY_PORT_UP);
 	led_light(LED_RED);
 	exti_init_gpio(INT_EXT0, EMPT_1_SUB_3, 0, 2, KEY_PORT_UP, KEY_UP_PIN_UP, DISABLE, ENABLE, ENABLE);
-	sm_printf("Welcome to the MicroSDK!\n");
+	printf("Welcome to the MicroSDK!\n");
 
 #else
 
-    puts_usart1("Start To FreeRTOS Task Creating!");
+    printf("Start To FreeRTOS Task Creating!\n");
 	xTaskCreate( basic_server,
                 "basi",
                 configMINIMAL_STACK_SIZE,
                 NULL,
                 configMAX_PRIORITIES - 1,
                 NULL);
-	// xTaskCreate( test1,
-    //             "test1",
-    //             configMINIMAL_STACK_SIZE,
-    //             NULL,
-    //             configMAX_PRIORITIES - 2,
-    //             NULL);
-    // xTaskCreate( test2,
-    //             "test2",
-    //             configMINIMAL_STACK_SIZE,
-    //             NULL,
-    //             configMAX_PRIORITIES - 3,
-    //             NULL);
 
     /* Start the scheduler. */
-    sm_printf("Start Task Schedule!\n");
+    printf("Start Task Schedule!\n");
     vTaskStartScheduler();
 #endif
 	while(1);
@@ -113,7 +78,7 @@ int main(int c, char *argv[])
 
 void vApplicationIdleHook(void)
 {
-    sm_printf("This is a Idle Task Hook function!\n");
+    printf("This is a Idle Task Hook function!\n");
 }
 
 void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,

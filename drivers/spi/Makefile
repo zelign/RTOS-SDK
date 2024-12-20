@@ -12,7 +12,7 @@ BUILD_SOURCE += $(SPI_OBJ_FILE)
 
 all: $(SPI_OBJ_FILE)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo "$(GREEN)Compile $(SPI_OBJ_FILE)$(END)"
+	@ echo "$(GREEN)Compile ${notdir $(SPI_OBJ_FILE)} OK$(END)"
 
 $(SPI_OBJ_FILE): $(SPI_C_FILE)
 	@ $(CC) $(DRV_FLAGS) -c $< -o $@

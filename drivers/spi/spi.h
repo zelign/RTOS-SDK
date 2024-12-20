@@ -15,7 +15,7 @@
 
 void spi_enable(enum spi_dev sd, bool b);
 
-inline void spi_reuse_cfg(enum gpio_reg GPIO,
+static inline void spi_reuse_cfg(enum gpio_reg GPIO,
                                 enum gpio_pin pin,
                                 enum gpio_moder moder,
                                 enum gpio_otype oty,

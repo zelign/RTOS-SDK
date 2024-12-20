@@ -1,7 +1,6 @@
 /* Standard includes. */
 #include <string.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 /* FreeRTOS includes. */
@@ -38,69 +37,108 @@ void cli_executor_loop( void *para )
 {
     (void) para;
     char cli_read = 0;
-    bool flag = FALSE;
-    char *rbuf = &cli_read_buf[0];
+    bool uart_readable_flag = FALSE;
+    CLI_Definition_List_Item_t *pxCommand = NULL;
+    char *cli_read_buf_p = &cli_read_buf[0];
 
-    sm_printf(GREEN_LOG, STM32F407ZGT6_PREFIX);
-    sm_printf(RED_LOG, PREFIX_SEPARATOR);
-    sm_printf(LIGHT_BLUE_LOG, STM32F407ZGT6_SUFFIX);
-    sm_printf(LIGHT_BLUE_LOG, SUFFIX_SEPARATOR);
+    printf(GREEN_LOG, STM32F407ZGT6_PREFIX);
+    printf(RED_LOG, PREFIX_SEPARATOR);
+    printf(LIGHT_BLUE_LOG, STM32F407ZGT6_SUFFIX);
+    printf(LIGHT_BLUE_LOG, SUFFIX_SEPARATOR);
+
     for ( ; ;) {
-        // sm_printf("stm32f407@iris:/%d\n", strlen(STM32F407ZGT6_PREFIX));
-        cli_read = getc_usart1_loop(&flag);
+        cli_read = getc_usart1_loop(&uart_readable_flag);
 #ifdef XCOM_UART_TOOL
-        if (flag) {
+        if (uart_readable_flag) {
             if (cli_read == '\n') {
                 if (!strncmp(&cli_read_buf[0], "help", 4)) {
-                    sm_printf("\nThis is a help command!\n");
+                    printf("\nThis is a help command!\n");
                     memset(&cli_read_buf[0], 0, 64);
-                    rbuf = &cli_read_buf[0];
+                    cli_read_buf_p = &cli_read_buf[0];
                 }
                 putc_usart1('\r');
-                sm_printf(GREEN_LOG, STM32F407ZGT6_PREFIX);
-                sm_printf(RED_LOG, PREFIX_SEPARATOR);
-                sm_printf(LIGHT_BLUE_LOG, STM32F407ZGT6_SUFFIX);
-                sm_printf(LIGHT_BLUE_LOG, SUFFIX_SEPARATOR);
+                printf(GREEN_LOG, STM32F407ZGT6_PREFIX);
+                printf(RED_LOG, PREFIX_SEPARATOR);
+                printf(LIGHT_BLUE_LOG, STM32F407ZGT6_SUFFIX);
+                printf(LIGHT_BLUE_LOG, SUFFIX_SEPARATOR);
             } else if (cli_read == '\r')
                 continue;
             else {
-                *rbuf++ = cli_read;
+                *cli_read_buf_p++ = cli_read;
                 putc_usart1(cli_read);
             }
         }
 #elif defined(SECURECRT_TOOL)
-        if (flag) {
+        if (uart_readable_flag) {
             if (cli_read == '\n') {
-                if (!strncmp(&cli_read_buf[0], "help", 4)) {
-                    FreeRTOS_CLIProcessCommand("help", NULL, 0);
-                    memset(&cli_read_buf[0], 0, 64);
-                    rbuf = &cli_read_buf[0];
+                if (cli_read_buf_p > &cli_read_buf[0]) { //confirm that the command only has '\n'
+                    *cli_read_buf_p = '\0'; //add the terminal for this command
+
+                    /* traverse the registered command to check if the inputted command is exists */
+                    for (pxCommand = get_registered_commands(); pxCommand != NULL; pxCommand = pxCommand->pxNext) {
+                        if ((!strncmp(&cli_read_buf[0], pxCommand->pxCommandLineDefinition->pcCommand,
+                            strlen(pxCommand->pxCommandLineDefinition->pcCommand))) &&
+                            ((cli_read_buf[strlen(pxCommand->pxCommandLineDefinition->pcCommand)] == ' ') || 
+                            (cli_read_buf[strlen(pxCommand->pxCommandLineDefinition->pcCommand)] == '\0') ||
+                            (cli_read_buf[strlen(pxCommand->pxCommandLineDefinition->pcCommand)] == '\r') ||
+                            (cli_read_buf[strlen(pxCommand->pxCommandLineDefinition->pcCommand)] == '\n') )) {
+                            /* find the command and process it */
+                            FreeRTOS_CLIProcessCommand(pxCommand->pxCommandLineDefinition->pcCommand,
+                                &cli_read_buf[strlen(pxCommand->pxCommandLineDefinition->pcCommand)], /* subcommand */
+                                strlen(&cli_read_buf[strlen(pxCommand->pxCommandLineDefinition->pcCommand)])); //subcommand length
+
+                            memset(&cli_read_buf[0], 0, 64);
+                            cli_read_buf_p = &cli_read_buf[0];
+                            break;
+                        }
+                    }
+
+                    if (!pxCommand) {
+                        memset(&cli_read_buf[0], 0, 64);
+                        cli_read_buf_p = &cli_read_buf[0];
+                        /* Intet prompt */
+                        putc_usart1('\r');
+                        putc_usart1('\n');
+                        printf(GREEN_LOG, STM32F407ZGT6_PREFIX);
+                        printf(RED_LOG, PREFIX_SEPARATOR);
+                        printf(LIGHT_BLUE_LOG, STM32F407ZGT6_SUFFIX);
+                        printf(LIGHT_BLUE_LOG, SUFFIX_SEPARATOR);
+                        printf("\n\tPlease input correct command:\n");
+                        FreeRTOS_CLIProcessCommand("help", &cli_read_buf[0], 0);
+                    }
                 }
+				/* Intet prompt */
                 putc_usart1('\r');
                 putc_usart1('\n');
-                sm_printf(GREEN_LOG, STM32F407ZGT6_PREFIX);
-                sm_printf(RED_LOG, PREFIX_SEPARATOR);
-                sm_printf(LIGHT_BLUE_LOG, STM32F407ZGT6_SUFFIX);
-                sm_printf(LIGHT_BLUE_LOG, SUFFIX_SEPARATOR);
+                printf(GREEN_LOG, STM32F407ZGT6_PREFIX);
+                printf(RED_LOG, PREFIX_SEPARATOR);
+                printf(LIGHT_BLUE_LOG, STM32F407ZGT6_SUFFIX);
+                printf(LIGHT_BLUE_LOG, SUFFIX_SEPARATOR);
             } else if (cli_read == '\r') {
                 putc_usart1('\r');
-            } else {
+            } else { //store the command into read buffer
                 putc_usart1(cli_read);
-                if ( cli_read == 0x08 ) {
-                    if (rbuf > &cli_read_buf[0]){
-                        *rbuf-- = 0;    
+                if ( cli_read == 0x08 ) { // backspace
+                    if (cli_read_buf_p > &cli_read_buf[0]){
+                        *cli_read_buf_p-- = 0;
                         putc_usart1(' ');
                         putc_usart1('\b');
                     } else
-                        sm_printf("\033[C");
-                } else
-                    *rbuf++ = cli_read;
+                        printf("\033[C");
+                } else {
+                    if (cli_read_buf_p >= &cli_read_buf[62]) {
+                        printf("\nThe command is too long!\n");
+                        memset(&cli_read_buf[0], 0, 64);
+                        cli_read_buf_p = &cli_read_buf[0];
+                    } else
+                        *cli_read_buf_p++ = cli_read;
+                }
             }
         }
 #endif
         portYIELD();
+        // vTaskDelay(50);
     }
-
 }
 
 void cli_console_init(void)

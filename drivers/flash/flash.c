@@ -8,7 +8,7 @@
 #endif
 
 #ifndef FLASH_DBG
-#define FLASH_DBG sm_printf
+#define FLASH_DBG printf
 #endif
 
 static struct flash_info flash_inf[] = {
@@ -69,7 +69,7 @@ void by25q64as_read_data(enum spi_dev sd, unsigned int address, char *data, unsi
 
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
     if (address & 0xff)
-        sm_printf("[Warning] Please align the address to page boundary (0x100) %x\n", address);
+        printf("[Warning] Please align the address to page boundary (0x100) %x\n", address);
     if (!spi_chk_buy(sd)) {
         spi_trans(sd, &read_data_cmd);
         read_data_cmd = (unsigned char)(address >> 16);
@@ -84,7 +84,7 @@ void by25q64as_read_data(enum spi_dev sd, unsigned int address, char *data, unsi
             data++;
         }
     } else {
-        sm_printf("busy!\n");
+        printf("busy!\n");
     }
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
 }
@@ -123,12 +123,12 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
     char *read_flash_data = NULL;
 
     if (address & 0xff) {
-        sm_printf("Please align the address to page boundary (0x100) %x\n", address);
+        printf("Please align the address to page boundary (0x100) %x\n", address);
         return -1;
     }
     // length detection
     if (address + data_len > CHIP_SIZE) {
-        sm_printf("The data length is too long!\n");
+        printf("The data length is too long!\n");
         return -1;
     }
 
@@ -136,21 +136,21 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
         program_len_per = SECTOR_SIZE / PAGE_NUM;
         FLASH_DBG("program_len_per: %d\n", program_len_per);
     } else {
-        sm_printf("The sector size or page number is not correct!\n");
+        printf("The sector size or page number is not correct!\n");
         return -1;
     }
 
     if (flash_buffer != NULL) {
         flash_buf_p = flash_buffer;
     } else {
-        sm_printf("The flash buffer is NULL!\n");
+        printf("The flash buffer is NULL!\n");
         return -1;
     }
 
     if (data != NULL) {
         data_p = data;
     } else {
-        sm_printf("The data is NULL!\n");
+        printf("The data is NULL!\n");
         return -1;
     }
 
@@ -158,7 +158,7 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
 
         read_flash_data = (char *)malloc(program_len_per);
         if(!read_flash_data) {
-            sm_printf("malloc read_flash_data failed!\n");
+            printf("malloc read_flash_data failed!\n");
             return -1;
         }
 
@@ -270,16 +270,16 @@ struct flash_info * find_flash_by_id(enum spi_dev sd, unsigned int id)
 
     for (unsigned int i = 0; i < sizeof(flash_inf) / sizeof(struct flash_info); i++, info++) {
         if (id == info->dev_id) {
-            sm_printf("---------------%s---------------\n", info->dev_name);
-            sm_printf("Chip Size: %dKB\n", info->chip_size);
-            sm_printf("Flash ID: 0X%X\n", id);
-            sm_printf("Block Size: %dKB\n", info->block_size);
-            sm_printf("Sector Size: %dKB\n", info->sector_size);
-            sm_printf("Page Num per sector: %d\n", info->page_num);
+            printf("---------------%s---------------\n", info->dev_name);
+            printf("Chip Size: %dKB\n", info->chip_size);
+            printf("Flash ID: 0X%X\n", id);
+            printf("Block Size: %dKB\n", info->block_size);
+            printf("Sector Size: %dKB\n", info->sector_size);
+            printf("Page Num per sector: %d\n", info->page_num);
             return info;
         }
     }
-    sm_printf("Cannot find the flash device with ID %d\n", id);
+    printf("Cannot find the flash device with ID %d\n", id);
     return NULL;
 }
 
@@ -293,7 +293,7 @@ struct flash_partition * get_partition_by_name(char *name)
     for (unsigned int i = 0; i < sizeof(partitions) / sizeof(struct flash_partition); i++, part++)
         if (!strncmp(name, part->name, strlen(name)))
             return part;
-    sm_printf("Cannot find the partition with name %s\n", name);
+    printf("Cannot find the partition with name %s\n", name);
     return NULL;
 }
 
@@ -316,10 +316,10 @@ int partition_init(struct flash_info *info)
         return -1;
     part->size = info->chip_size * 1024 - msize * 1024;
 
-    sm_printf("*********%s partition table*********\n", info->dev_name);
+    printf("*********%s partition table*********\n", info->dev_name);
     part = &partitions[0];
     for (unsigned char i = 0; i < sizeof(partitions) / sizeof(struct flash_partition) && part != NULL; part++, i++)
-        sm_printf("[%s] 0x%x-%dKB\n", part->name, part->offset, part->size);
+        printf("[%s] 0x%x-%dKB\n", part->name, part->offset, part->size);
 
     return 0;
 }
@@ -328,13 +328,13 @@ void by25q64as_flash_test(enum spi_dev sd, unsigned int write_addr)
 {
     char *read_data = NULL;
 
-    sm_printf("***********BY25Q64AS page program test 0x%x***********\n", write_addr);
-    sm_printf("Write: BY25Q64AS in 0x%x len %d\n", write_addr, strlen(FLASH_NAME));
+    printf("***********BY25Q64AS page program test 0x%x***********\n", write_addr);
+    printf("Write: BY25Q64AS in 0x%x len %d\n", write_addr, strlen(FLASH_NAME));
 
     by25q64as_write_enable();
     by25q64as_read_write(sd, write_addr, FLASH_NAME, strlen(FLASH_NAME));
 
-    sm_printf("***********BY25Q64AS read data test***********\n");
+    printf("***********BY25Q64AS read data test***********\n");
 
     read_data = (char *)malloc(strlen(FLASH_NAME));
     memset(read_data, 0, strlen(FLASH_NAME));
@@ -342,9 +342,9 @@ void by25q64as_flash_test(enum spi_dev sd, unsigned int write_addr)
     by25q64as_read_data(sd, write_addr, read_data, strlen(FLASH_NAME));
 
     if (!strncmp(FLASH_NAME, read_data, strlen(FLASH_NAME)))
-        sm_printf("Flash test success: %s\n\n", read_data);
+        printf("Flash test success: %s\n\n", read_data);
     else
-        sm_printf("Flash test failed: %s\n\n", read_data);
+        printf("Flash test failed: %s\n\n", read_data);
     free(read_data);
 }
 
@@ -357,18 +357,18 @@ void by25q64as_init(enum spi_dev sd)
 
     current_flash = find_flash_by_id(sd, id);
     if (!current_flash) {
-        sm_printf("by25q64as init failed!\n");
+        printf("by25q64as init failed!\n");
         return;
     }
     flash_buffer = (char *)malloc(SECTOR_SIZE);
     if (!flash_buffer) {
-        sm_printf("malloc flash buffer failed!\n");
+        printf("malloc flash buffer failed!\n");
         return;
     }
     memset(flash_buffer, 0, SECTOR_SIZE);
 
     if (partition_init(current_flash)) {
-        sm_printf("partition init failed!\n");
+        printf("partition init failed!\n");
         return;
     }
 
@@ -380,7 +380,7 @@ void by25q64as_init(enum spi_dev sd)
 void spi_1_by25q64as_init(void)
 {
     if (flash_init_flag) {
-        sm_printf("The flash has been initialized!\n");
+        printf("The flash has been initialized!\n");
         return;
     }
 
@@ -402,6 +402,11 @@ void spi_1_by25q64as_init(void)
 
 #ifdef CONFIG_FLASH_CMD
 
+/**
+ * @brief store the sub command parameters
+ * [0]: sub command
+ * [1]-[3]: parameters
+ */
 static char *flash_sub_cmd_para[4] = {NULL};
 
 static BaseType_t flash_init_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
@@ -410,28 +415,48 @@ static BaseType_t flash_init_command_callback( char *pcWriteBuffer, size_t xWrit
     return pdTRUE;
 }
 
+/**
+ * @brief
+ * 
+ * @param pcWriteBuffer @ pointer to the first parameter
+ * @param xWriteBufferLen 
+ * @param pcCommandString 
+ * @return BaseType_t 
+ */
 static BaseType_t flash_erase_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
+    printf("flash erase\n");
     return pdTRUE;
 }
 
 static BaseType_t flash_read_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
+    printf("flash read\n");
     return pdTRUE;
 }
 
 static BaseType_t flash_write_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
+    printf("flash write\n");
     return pdTRUE;
 }
 
 static BaseType_t flash_test_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
+    printf("flash test\n");
     return pdTRUE;
 }
 
 static BaseType_t flash_help_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
+    printf("\r\nhelp:\r\n");
+    printf("flash init: Initialize the flash\n");
+    printf("flash erase address len: erase the flash from address with len\n");
+    printf("flash read offset address len: read the flash data from offset into address in RAM with len\n");
+    printf("flash write offset address len: write the data from address in RAM into flash offset position with len\n");
+    printf("flash test [start address] [len]: test the flash with addresss range is start address to start address + len\n");
+    printf("\t\tThe default start address is 0x0 and the default len is 1MB\n");
+    printf("flash help: Lists all the registered commands\r\n\r\n");
     return pdTRUE;
 }
 
@@ -481,49 +506,65 @@ static CLI_Command_Definition_t flash_sub_command[] =
     }    
 };
 
+/**
+ * @brief 
+ * 
+ * @param pcWriteBuffer @ pointer to the first subcommand or terminal '\0'
+ * @param xWriteBufferLen @ the length of the pcWriteBuffer
+ * @param pcCommandString @ the command string
+ * @return BaseType_t 
+ */
 static BaseType_t flash_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
     if (!pcCommandString) { //confirm that whether the command has a sub command
-        sm_printf("pcCommandString is NULL!\n");
+        printf("pcCommandString is NULL!\n");
         return pdFALSE;
     }
 
     if (strncmp(pcCommandString, "flash", 5)) {
-        sm_printf("The command is not flash command!\n");
+        printf("The command is not flash command!\n");
         return pdFALSE;
     }
-
+    printf("\n");
     if (pcWriteBuffer) { //confirm that whether the command has sub command
         char *start = NULL, *end = NULL;
         unsigned char sub_cmd_index = 0;
         start = pcWriteBuffer;
+        end = pcWriteBuffer;
 
         memset(flash_sub_cmd_para, 0, sizeof(flash_sub_cmd_para));
         /* get all sub commands and store them into flash_sub_cmd_para array */
-        for (end = pcWriteBuffer; *end != '\0'; end++)
-            if (*end == ' ') { //moore than one sub command
+        for (end = pcWriteBuffer; *end != '\0'; end++) {
+            if (*end == 0x20) { //moore than one sub command
+                if (start == end) {
+                    start = end + 1;
+                    continue;
+                }
                 unsigned char sub_cmd_len = end - start;
                 flash_sub_cmd_para[sub_cmd_index] = (char *)malloc(sub_cmd_len + 1); //sub command length + '\0'
 
                 if (!flash_sub_cmd_para[sub_cmd_index]) {
-                    sm_printf("malloc sub command failed!\n");
+                    printf("malloc sub command failed! %d\n", __LINE__);
                     return pdFALSE;
                 }
+
                 strncpy(flash_sub_cmd_para[sub_cmd_index], start, sub_cmd_len);
                 flash_sub_cmd_para[sub_cmd_index][sub_cmd_len] = '\0';
                 sub_cmd_index++;
                 start = end + 1;
             }
+        }
+
         /* confirm that has one or two subcommand */
-        if (*end == '\0') { //the last sub command
-            if (start == pcWriteBuffer) { //only one sub command
+        if ((*end == '\0') && (start != end)) { //the last sub command
+            if (start == pcWriteBuffer + 1) { //only one sub command
                 sub_cmd_index = 0;
-                flash_sub_cmd_para[sub_cmd_index] = (char *)malloc(strlen(pcWriteBuffer) + 1);     
+                flash_sub_cmd_para[sub_cmd_index] = (char *)malloc(strlen(start) + 1);   
             } else   //more than one sub command
-                flash_sub_cmd_para[sub_cmd_index] = (char *)malloc(strlen(start + 1));
+                flash_sub_cmd_para[sub_cmd_index] = (char *)malloc(strlen(start) + 1);
 
             if (!flash_sub_cmd_para[sub_cmd_index]) {
-                    sm_printf("malloc sub command failed!\n");
+                    printf("malloc sub command failed!\n");
                     return pdFALSE;
             }
 
@@ -533,7 +574,7 @@ static BaseType_t flash_command_callback( char *pcWriteBuffer, size_t xWriteBuff
         /* execute sub commands */
         CLI_Command_Definition_t *flash_subcmd = NULL;
         CLI_Definition_List_Item_t *flash_subcmd_list = NULL;
-        for (flash_subcmd_list = get_registered_commands(); flash_subcmd_list != NULL; flash_subcmd_list ++)
+        for (flash_subcmd_list = get_registered_commands(); flash_subcmd_list != NULL; flash_subcmd_list = flash_subcmd_list->pxNext)
             if (!strncmp(pcCommandString, flash_subcmd_list->pxCommandLineDefinition->pcCommand, strlen(pcCommandString)))
                 break;
 
@@ -550,6 +591,7 @@ static BaseType_t flash_command_callback( char *pcWriteBuffer, size_t xWriteBuff
             }
         }
     }
+    printf("Please input correct command:\n");
     flash_help_command_callback(NULL, 0, NULL);
     return pdTRUE;
 }

@@ -12,7 +12,7 @@ BUILD_SOURCE += $(FLASH_OBJ_FILE)
 
 all: $(FLASH_OBJ_FILE)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo "$(GREEN)Compile $(FLASH_OBJ_FILE)$(END)"
+	@ echo "$(GREEN)Compile ${notdir $(FLASH_OBJ_FILE)} OK$(END)"
 
 $(FLASH_OBJ_FILE): $(FLASH_C_FILE)
 	@ $(CC) $(DRV_FLAGS) -c $< -o $@

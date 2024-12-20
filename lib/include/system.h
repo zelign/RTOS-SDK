@@ -4,13 +4,30 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef __SYSTEM_H__
-#define __SYSTEM_H__
+#ifndef __MY_SYSTEM_H__
+#define __MY_SYSTEM_H__
+
+#include "tolower.h"
+#include "atoi.h"
+#include "isalpha.h"
+#include "islower.h"
+#include "isupper.h"
+#include "strcmp.h"
+#include "strncmp.h"
+#include "strcat.h"
+#include "strcpy.h"
+#include "strlen.h"
+#include "strncat.h"
+#include "strncpy.h"
+#include "isspace.h"
+#include "isdigit.h"
+#include "strtoul.h"
+
+#include <stdio.h>
 
 #include <stdlib.h>
-#include <stdio.h>
-#include "string.h"
 #include <stdint.h>
+
 
 #define xPortSysTickHandler SysTick_Handler
 #define xPortPendSVHandler  PendSV_Handler
@@ -40,19 +57,6 @@ enum {
     do { \
         *(reg) &= val; \
     } while(0);
-#if 0
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
-typedef unsigned int size_t;
-
-
-typedef char    int8_t;
-typedef short   int16_t;
-typedef int     int32_t;
-typedef long long int64_t;
-#endif
 
 char *gets_usart1(void);
 char getc_usart1_loop (bool *flag);
@@ -75,7 +79,27 @@ void boot_init(void);
 void exit_error(void);
 void app_init(void);
 
-void sm_printf(const char *fmt, ...);
 void cli_console_init(void);
+
+/* define for memset */
+// extern int memset(void *s, int c, unsigned int n);
+
+#define MEMSET_SUCCESS 0
+#define MEMSET_COUNT_ERROR 1
+#define MEMSET_DST_ERROR 2
+
+/* define for memcpy */
+// extern int memcpy(void *dst, void *src, unsigned int n);
+
+#define MEMCPY_SUCCESS 0
+#define MEMCPY_COUNT_ERROR 1
+#define MEMCPY_DST_ERROR 2
+#define MEMCPY_SRC_ERROR 3
+
+/* define for memcmp */
+// extern int memcmp(void *dst, void *src, unsigned int n);
+#define MEMCMP_EQUAL 0
+#define MEMCMP_NOT_EQUAL 1
+#define MEMCMP_FAIL 2
 
 #endif

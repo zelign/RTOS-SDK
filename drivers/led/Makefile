@@ -13,7 +13,7 @@ BUILD_SOURCE += $(LED_OBJ_FILE)
 
 all: $(LED_OBJ_FILE)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo "$(GREEN)Compile $(LED_OBJ_FILE)$(END)"
+	@ echo "$(GREEN)Compile ${notdir $(LED_OBJ_FILE)} OK$(END)"
 
 $(LED_OBJ_FILE): $(LED_C_FILE)
 	@ $(CC) $(DRV_FLAGS) -c $< -o $@

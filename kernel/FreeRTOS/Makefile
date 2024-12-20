@@ -43,9 +43,9 @@ BUILD_SOURCE += $(KERNEL_OBJ) $(KERNEL_OBJ_F) $(KERNEL_OBJ_M)
 
 all: info $(KERNEL_ASM_OBJ) $(KERNEL_OBJ_M) $(KERNEL_OBJ_F) $(KERNEL_OBJ)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo -e "$(GREEN)Compile $(KERNEL_OBJ)$(END)"
-	@ echo -e "$(GREEN)Compile $(KERNEL_OBJ_F)$(END)"
-	@ echo -e "$(GREEN)Compile $(KERNEL_OBJ_M)$(END)"
+	@ echo -e "$(GREEN)Compile ${notdir $(KERNEL_OBJ)} OK$(END)"
+	@ echo -e "$(GREEN)Compile ${notdir $(KERNEL_OBJ_F)} OK$(END)"
+	@ echo -e "$(GREEN)Compile ${notdir $(KERNEL_OBJ_M)} OK$(END)"
 	@ echo -e "	$(CYAN)Compile OK!$(END)"
 info:
 	@ echo -e "$(YELLOW)$(BOLD)[7] INTO $(UNDERLINE)$(KERNEL_DIR_SINGLE)$(END) $(YELLOW)$(BOLD)COMPILE...$(END)"

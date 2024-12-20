@@ -63,7 +63,7 @@ FLOAT_ABI = -mfloat-abi=hard
 #if use FLOAT_ABI, there will occur error during compiling.
 MCU_PARA = $(CPU_PARA) -mthumb $(FPU_PARA) $(FLOAT_ABI)
 LIB_DIR = -v
-LIBS = #-nostdlib#-specs=nano.specs #
+LIBS = #-nostdlib -nodefaultlibs
 
 #These parameters can be passed by the script file "build.sh", so
 #they are have no value before implement the command `make build`.
@@ -74,7 +74,7 @@ ELF_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).elf
 HEX_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).hex
 LST_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).lst
 
-LD_OPTION = $(MCU_PARA) -T$(LD_SCRIPT) $(LIBS) $(LIB_DIR) -Wl,-Map=$(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).map,--cref,--gc-sections $(WRAP_FLAGS)#, -ffunction-sections
+LD_OPTION = $(MCU_PARA) -T$(LD_SCRIPT) $(LIBS) $(LIB_DIR) -Wl,-Map=$(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).map,--cref,--gc-sections $(WRAP_FLAGS)
 export CC AS CP SZ DP MCU_PARA ELF_FILE HEX_FILE LST_FILE LD_OPTION PRJ_ROOT_DIR
 CROSS_COMPILER := $(TOOLCHAIN_SRC)/$(COMPILER)*$(COMPILER_KEYWORD)
 
@@ -157,8 +157,9 @@ DRV_C_SRC_INCLUDES += $(DRV_INCLUDES) \
 					-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
 					-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F
 
-DRV_FLAGS += $(MCU_PARA) $(C_DEFS) $(DRV_C_SRC_INCLUDES) -Og -Wall -fdata-sections -ffunction-sections
-C_FLAGS := $(DRV_FLAGS) #$(WRAP_FLAGS)
+DRV_FLAGS += $(MCU_PARA) $(C_DEFS) $(DRV_C_SRC_INCLUDES) -Wall -fdata-sections -ffunction-sections -fno-builtin-printf \
+-fno-builtin-malloc -fno-builtin-free -O2
+C_FLAGS := $(DRV_FLAGS)
 export C_FLAGS DRV_FIND_DIR DRV_FLAGS DRV_INCLUDES
 
 #sub Makefile, and the execution sequence is determined by the variable.

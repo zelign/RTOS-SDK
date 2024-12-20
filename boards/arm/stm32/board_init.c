@@ -20,9 +20,8 @@ static unsigned int inline get_sp_reg(void)
 }
 void app_init(void)
 {
-    put32_usart1(get_sp_reg());
     initcall_app_init();
-	sm_printf("App initial!\n");
+	printf("App initial!\n");
 }
 
 

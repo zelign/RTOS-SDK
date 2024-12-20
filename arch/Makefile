@@ -50,7 +50,7 @@ BUILD_SOURCE += $(ARCH_OBJ)
 
 all: info $(ARCH_ASM_OBJ) $(ARCH_OBJ)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo -e "$(GREEN)Compile $(ARCH_OBJ)$(END)"
+	@ echo -e "$(GREEN)Compile ${notdir $(ARCH_OBJ)} OK$(END)"
 	@ echo -e "	$(CYAN)Compile OK!$(END)"
 info:
 	$(Q) echo -e "$(YELLOW)$(BOLD)[4] INTO $(UNDERLINE)$(ARCH_DIR_SINGLE)$(END) $(YELLOW)$(BOLD)COMPILE...$(END)"

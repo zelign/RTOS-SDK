@@ -13,7 +13,7 @@ BUILD_SOURCE += $(KEY_OBJ_FILE)
 
 all: $(KEY_OBJ_FILE)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo "$(GREEN)Compile $(KEY_OBJ_FILE)$(END)"
+	@ echo "$(GREEN)Compile ${notdir $(KEY_OBJ_FILE)} OK$(END)"
 
 $(KEY_OBJ_FILE): $(KEY_C_FILE)
 	@ $(CC) $(DRV_FLAGS) -c $< -o $@

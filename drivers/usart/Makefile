@@ -13,7 +13,7 @@ BUILD_SOURCE += $(USART_OBJ_FILE)
 
 all: $(USART_OBJ_FILE)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo "$(GREEN)Compile $(USART_OBJ_FILE)$(END)"
+	@ echo "$(GREEN)Compile ${notdir $(USART_OBJ_FILE)} OK$(END)"
 
 $(USART_OBJ_FILE): $(USART_C_FILE)
 	@ $(CC) $(DRV_FLAGS) -c $< -o $@

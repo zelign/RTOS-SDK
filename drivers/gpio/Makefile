@@ -12,7 +12,7 @@ BUILD_SOURCE += $(GPIO_OBJ_FILE)
 
 all: $(GPIO_OBJ_FILE)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo "$(GREEN)Compile $(GPIO_OBJ_FILE)$(END)"
+	@ echo "$(GREEN)Compile ${notdir $(GPIO_OBJ_FILE)} OK$(END)"
 
 $(GPIO_OBJ_FILE): $(GPIO_C_FILE)
 	@ $(CC) $(DRV_FLAGS) -c $< -o $@
