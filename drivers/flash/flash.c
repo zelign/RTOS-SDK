@@ -7,8 +7,10 @@
 #include "FreeRTOS_CLI.h"
 #endif
 
-#ifndef FLASH_DBG
+#ifdef FLASH_DBG
 #define FLASH_DBG printf
+#else
+#define FLASH_DBG(fmt, ...) do{}while(0)
 #endif
 
 static struct flash_info flash_inf[] = {
@@ -57,7 +59,7 @@ static void by25q64as_write_enable(void)
 {
     unsigned char write_enable_cmd = 0x06;
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
-    if (!spi_chk_buy(SPI_1))
+    if (!spi_chk_busy(SPI_1))
         spi_trans(SPI_1, &write_enable_cmd);
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
 }
@@ -65,23 +67,21 @@ static void by25q64as_write_enable(void)
 void by25q64as_read_data(enum spi_dev sd, unsigned int address, char *data, unsigned int data_len)
 {
     unsigned char read_data_cmd = READ_DATA_CMD;
+    unsigned char cmd[3] = { (address >> 16) & 0xff, (address >> 8) & 0xff, address & 0xff };
     unsigned char write_cmd = 0xff;
+    char *data_p = data;
 
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
     if (address & 0xff)
         printf("[Warning] Please align the address to page boundary (0x100) %x\n", address);
-    if (!spi_chk_buy(sd)) {
+    if (!spi_chk_busy(sd)) {
         spi_trans(sd, &read_data_cmd);
-        read_data_cmd = (unsigned char)(address >> 16);
-        spi_trans(sd, &read_data_cmd);
-        read_data_cmd = (unsigned char)(address >> 8);
-        spi_trans(sd, &read_data_cmd);
-        read_data_cmd = (unsigned char)(address);
-        spi_trans(sd, &read_data_cmd);
-
+        spi_trans(sd, &cmd[0]);
+        spi_trans(sd, &cmd[1]);
+        spi_trans(sd, &cmd[2]);
         for (unsigned int i = 0; i < data_len; i++) {
-            *data = spi_trans(sd, &write_cmd);
-            data++;
+            *data_p = spi_trans(sd, &write_cmd);
+            data_p++;
         }
     } else {
         printf("busy!\n");
@@ -95,7 +95,7 @@ void by25q64as_sector_erase(enum spi_dev sd, unsigned int address)
     unsigned char adr[3] = { (address >> 16) & 0xff, (address >> 8) & 0xff, address & 0xff };
 
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
-    if (!spi_chk_buy(sd)) {
+    if (!spi_chk_busy(sd)) {
         spi_trans(sd, &erase_cmd);
         spi_trans(sd, &adr[0]);
         spi_trans(sd, &adr[1]);
@@ -106,11 +106,12 @@ void by25q64as_sector_erase(enum spi_dev sd, unsigned int address)
 
 void by25q64as_chip_erase(enum spi_dev sd)
 {
-    unsigned char erase_cmd = 0x60;
+    unsigned char erase_cmd = 0xc7;//0x60;
 
+    while (spi_chk_busy(sd));
+    printf("Erase all chip ... \n");
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
-    if (!spi_chk_buy(sd))
-        spi_trans(sd, &erase_cmd);
+    spi_trans(sd, &erase_cmd);
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
 }
 
@@ -163,18 +164,20 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
         }
 
         memset(read_flash_data, 0, program_len_per);
-        FLASH_DBG("start read data\n");
-        by25q64as_read_data(sd, (address & ~0xff), read_flash_data, program_len_per);
+        FLASH_DBG("start read data:0x%x\n", address);
+        by25q64as_read_data(sd, address, read_flash_data, program_len_per);
+        FLASH_DBG("end read data\n");
+        unsigned int offset = 0;
 
-        unsigned char offset = 0;
-
-        for (offset = 0; offset < program_len_per; offset++)
+        for (offset = 0; offset < program_len_per; offset++) {
             if (read_flash_data[offset] != 0xff) {
                 need_erase = TRUE;
                 FLASH_DBG("erase flag\n");
                 break;
             }
-
+        }
+            
+        FLASH_DBG("Free read_flash_data\n");
         free(read_flash_data);
         FLASH_DBG("offset: %d\n", offset);
         if (offset == program_len_per) {//The page is empty, program directly
@@ -250,7 +253,7 @@ static void get_by25q64as_device_id(enum spi_dev sd, unsigned int *dev_id)
     unsigned char get_id_cmd = MANUFACTURER_CMD;
 
     gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
-    if (!spi_chk_buy(sd)) {
+    if (!spi_chk_busy(sd)) {
         spi_trans(sd, &get_id_cmd);
         get_id_cmd = 0;
         spi_trans(sd, &get_id_cmd);
@@ -332,7 +335,11 @@ void by25q64as_flash_test(enum spi_dev sd, unsigned int write_addr)
     printf("Write: BY25Q64AS in 0x%x len %d\n", write_addr, strlen(FLASH_NAME));
 
     by25q64as_write_enable();
-    by25q64as_read_write(sd, write_addr, FLASH_NAME, strlen(FLASH_NAME));
+    for (unsigned long i = 0; i < 50; i++, write_addr += 256) {
+        printf("Write: 0x%x\n", write_addr);
+        by25q64as_read_write(sd, write_addr, "abcdefghijklmnopqRSTXYZ1234567890/*-+!@#$^&*()", strlen("abcdefghijklmnopqRSTXYZ1234567890/*-+!@#$^&*()"));
+    }
+    // by25q64as_read_write(sd, write_addr, FLASH_NAME, strlen(FLASH_NAME));
 
     printf("***********BY25Q64AS read data test***********\n");
 
@@ -351,7 +358,6 @@ void by25q64as_flash_test(enum spi_dev sd, unsigned int write_addr)
 void by25q64as_init(enum spi_dev sd)
 {
     unsigned int id = 0;
-    unsigned int test_add = 0;
 
     get_by25q64as_device_id(sd, &id);
 
@@ -372,8 +378,6 @@ void by25q64as_init(enum spi_dev sd)
         return;
     }
 
-    // for (unsigned int i = 0; i < 32; i++, test_add += 0x100)
-    //     by25q64as_flash_test(sd, test_add);
     flash_init_flag = TRUE;
 }
 
@@ -402,6 +406,46 @@ void spi_1_by25q64as_init(void)
 
 #ifdef CONFIG_FLASH_CMD
 
+static void print_memory(unsigned int start_addr, unsigned int length) {
+    unsigned char *ptr = (unsigned char *)start_addr;
+    unsigned int i;
+
+    for (i = 0; i < length; i++) {
+        if (i % 16 == 0) {
+            if (i != 0) {
+                printf("  ");
+                for (int j = i - 16; j < i; j++) {
+                    unsigned char c = ptr[j];
+                    if (c >= 32 && c <= 126)
+                        putc_usart1(c);
+                    else
+                        printf(".");
+                }
+            }
+            printf("\n");
+            printf("0x%x: ", (unsigned int)(ptr + i));
+        }
+        printf("%X ", ptr[i]);
+    }
+
+    if (i % 16 != 0) {
+        int padding = 16 - (i % 16);
+        for (int j = 0; j < padding; j++) {
+            printf("   ");
+        }
+
+        printf("  ");
+        for (int j = i - (i % 16); j < i; j++) {
+            unsigned char c = ptr[j];
+            if (c >= 32 && c <= 126)
+                putc_usart1(c);
+            else
+                printf(".");
+        }
+        printf("\n");
+    }
+}
+
 /**
  * @brief store the sub command parameters
  * [0]: sub command
@@ -425,36 +469,79 @@ static BaseType_t flash_init_command_callback( char *pcWriteBuffer, size_t xWrit
  */
 static BaseType_t flash_erase_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
-    printf("flash erase\n");
+    unsigned int offset, len;
+
+    offset = atoi(flash_sub_cmd_para[1]);
+    len = atoi(flash_sub_cmd_para[2]);
+
+    for (unsigned int i = 0; i < len; i += SECTOR_SIZE, offset += SECTOR_SIZE)
+        by25q64as_sector_erase(SPI_1, offset);
+
+    return pdTRUE;
+}
+
+static BaseType_t flash_erase_all_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
+{
+    printf("Erase all chip ... \n");
+    by25q64as_chip_erase(SPI_1);  
     return pdTRUE;
 }
 
 static BaseType_t flash_read_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
-    printf("flash read\n");
+    unsigned int address, len, offset;
+
+    offset = atoi(flash_sub_cmd_para[1]);
+    address = atoi(flash_sub_cmd_para[2]);
+    len = atoi(flash_sub_cmd_para[3]);
+
+    by25q64as_read_data(SPI_1, offset, (char *)address, len);
+    return pdTRUE;
+}
+
+static BaseType_t flash_hexdump_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
+{
+    unsigned int *address, len, offset;
+
+    offset = atoi(flash_sub_cmd_para[1]);
+    len = atoi(flash_sub_cmd_para[2]);
+
+    address = (unsigned int *)malloc(len);
+
+    by25q64as_read_data(SPI_1, offset, (char *)address, len);
+    print_memory((unsigned int)address, len);
+    free(address);
     return pdTRUE;
 }
 
 static BaseType_t flash_write_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
     printf("flash write\n");
+    unsigned int address, len, offset;
+
+    offset = atoi(flash_sub_cmd_para[1]);
+    address = atoi(flash_sub_cmd_para[2]);
+    len = atoi(flash_sub_cmd_para[3]);
+
+    by25q64as_read_write(SPI_1, offset, (void *)address, len);
     return pdTRUE;
 }
 
 static BaseType_t flash_test_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
-    printf("flash test\n");
+    by25q64as_flash_test(SPI_1, 0);
     return pdTRUE;
 }
 
 static BaseType_t flash_help_command_callback( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString )
 {
     printf("\r\nhelp:\r\n");
-    printf("flash init: Initialize the flash\n");
-    printf("flash erase address len: erase the flash from address with len\n");
-    printf("flash read offset address len: read the flash data from offset into address in RAM with len\n");
-    printf("flash write offset address len: write the data from address in RAM into flash offset position with len\n");
-    printf("flash test [start address] [len]: test the flash with addresss range is start address to start address + len\n");
+    printf("flash init:                             Initialize the flash\n");
+    printf("flash erase [address] [len]:            erase the flash from [address] with [len]\n");
+    printf("flash read [offset] [address] [len]:    read the flash data from [offset] into [address] in RAM with [len]\n");
+    printf("flash hexdump [offset] [len]:           read the flash data from [offset] with [len] and print\n");
+    printf("flash write [offset] [address] [len]:   write the data from [address] in RAM into flash [offset] position with [len]\n");
+    printf("flash test [start address] [len]:       test the flash with addresss range is [start address] to [start address] + len\n");
     printf("\t\tThe default start address is 0x0 and the default len is 1MB\n");
     printf("flash help: Lists all the registered commands\r\n\r\n");
     return pdTRUE;
@@ -466,42 +553,56 @@ static CLI_Command_Definition_t flash_sub_command[] =
         "init",
 	    NULL,
 	    flash_init_command_callback,
-	    0,
+	    -1,
         NULL
     },
     {
         "erase",
         NULL,
         flash_erase_command_callback,
-        0,
+        -1,
+        NULL
+    },
+    {
+        "erase_all",
+        NULL,
+        flash_erase_all_command_callback,
+        -1,
         NULL
     },
     {
         "read",
         NULL,
         flash_read_command_callback,
-        0,
+        -1,
+        NULL
+    },
+    {
+        "hexdump",
+        NULL,
+        flash_hexdump_command_callback,
+        -1,
         NULL
     },
     {
         "write",
         NULL,
         flash_write_command_callback,
-        0,
+        -1,
         NULL
     },
     {
         "test",
         NULL,
         flash_test_command_callback,
-        0,
+        -1,
         NULL
     },
     {
         "help",
         NULL,
         flash_help_command_callback,
-        0,
+        -1,
         NULL
     }    
 };
@@ -556,19 +657,20 @@ static BaseType_t flash_command_callback( char *pcWriteBuffer, size_t xWriteBuff
         }
 
         /* confirm that has one or two subcommand */
-        if ((*end == '\0') && (start != end)) { //the last sub command
+        if ((*end == '\0') && (start < end)) { //the last sub command
             if (start == pcWriteBuffer + 1) { //only one sub command
                 sub_cmd_index = 0;
                 flash_sub_cmd_para[sub_cmd_index] = (char *)malloc(strlen(start) + 1);   
-            } else   //more than one sub command
+            } else { //more than one sub command
                 flash_sub_cmd_para[sub_cmd_index] = (char *)malloc(strlen(start) + 1);
-
+            }
             if (!flash_sub_cmd_para[sub_cmd_index]) {
                     printf("malloc sub command failed!\n");
                     return pdFALSE;
             }
 
-            strncpy(flash_sub_cmd_para[sub_cmd_index], start, (strlen(start) + 1));
+            strncpy(flash_sub_cmd_para[sub_cmd_index], start, (unsigned int)(end - start));
+            flash_sub_cmd_para[sub_cmd_index][strlen(start)] = '\0'; // Ensure null-termination
         }
 
         /* execute sub commands */
@@ -583,11 +685,13 @@ static BaseType_t flash_command_callback( char *pcWriteBuffer, size_t xWriteBuff
             flash_subcmd = flash_subcmd_list->pxCommandLineDefinition->subcmd;
             for (unsigned char num = 0; num < sizeof(flash_sub_command)/sizeof(CLI_Command_Definition_t);
                 num++, flash_subcmd++) {
-                if (!strncmp(flash_subcmd->pcCommand, flash_sub_cmd_para[0], strlen(flash_sub_cmd_para[0])))
+                if (!strncmp(flash_subcmd->pcCommand, flash_sub_cmd_para[0], ((strlen(flash_subcmd->pcCommand) > strlen(flash_sub_cmd_para[0]))
+                        ?strlen(flash_subcmd->pcCommand):strlen(flash_sub_cmd_para[0])))) {
                     if (flash_subcmd->pxCommandInterpreter) {
                         flash_subcmd->pxCommandInterpreter(NULL, 0, NULL);
                         return pdTRUE;
                     }
+                }
             }
         }
     }
@@ -601,7 +705,7 @@ static const CLI_Command_Definition_t flash_command =
 	"flash",
 	NULL,
 	flash_command_callback,
-	0,
+	-1,
     &flash_sub_command[0],
 };
 

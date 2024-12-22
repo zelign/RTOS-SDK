@@ -63,7 +63,7 @@ static const CLI_Command_Definition_t xHelpCommand =
 	"help",
 	"\r\nhelp:\r\n Lists all the registered commands\r\n\r\n",
 	prvHelpCommand,
-	0
+	-1
 };
 
 /* The definition of the list of commands.  Commands that are registered are
@@ -143,7 +143,7 @@ BaseType_t xReturn = pdFAIL;
 
 BaseType_t FreeRTOS_CLIProcessCommand( const char * const pcCommandInput, char * pcWriteBuffer, size_t xWriteBufferLen  )
 {
-static const CLI_Definition_List_Item_t *pxCommand = NULL;
+CLI_Definition_List_Item_t *pxCommand = NULL;
 BaseType_t xReturn = pdTRUE;
 const char *pcRegisteredCommandString;
 size_t xCommandStringLength;
@@ -158,7 +158,6 @@ size_t xCommandStringLength;
 		{
 			pcRegisteredCommandString = pxCommand->pxCommandLineDefinition->pcCommand;
 			xCommandStringLength = strlen( pcRegisteredCommandString );
-
 			/* To ensure the string lengths match exactly, so as not to pick up
 			a sub-string of a longer command, check the byte after the expected
 			end of the string is either the end of the string or a space before

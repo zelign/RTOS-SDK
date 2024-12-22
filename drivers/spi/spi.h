@@ -73,6 +73,6 @@ bool spi_rev_buf_is_null(enum spi_dev sd);
  * @return true 
  * @return false 
  */
-bool spi_chk_buy(enum spi_dev sd);
+bool spi_chk_busy(enum spi_dev sd);
 
 #endif

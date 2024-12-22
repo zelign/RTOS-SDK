@@ -86,7 +86,6 @@ void cli_executor_loop( void *para )
                             FreeRTOS_CLIProcessCommand(pxCommand->pxCommandLineDefinition->pcCommand,
                                 &cli_read_buf[strlen(pxCommand->pxCommandLineDefinition->pcCommand)], /* subcommand */
                                 strlen(&cli_read_buf[strlen(pxCommand->pxCommandLineDefinition->pcCommand)])); //subcommand length
-
                             memset(&cli_read_buf[0], 0, 64);
                             cli_read_buf_p = &cli_read_buf[0];
                             break;
@@ -103,8 +102,8 @@ void cli_executor_loop( void *para )
                         printf(RED_LOG, PREFIX_SEPARATOR);
                         printf(LIGHT_BLUE_LOG, STM32F407ZGT6_SUFFIX);
                         printf(LIGHT_BLUE_LOG, SUFFIX_SEPARATOR);
-                        printf("\n\tPlease input correct command:\n");
-                        FreeRTOS_CLIProcessCommand("help", &cli_read_buf[0], 0);
+                        printf("\n Please input correct command:\n");
+                        FreeRTOS_CLIProcessCommand("help", NULL, 0);
                     }
                 }
 				/* Intet prompt */
