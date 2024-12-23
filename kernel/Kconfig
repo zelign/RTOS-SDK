@@ -1,0 +1,25 @@
+choice
+    prompt "Kernel Selection"
+config FREERTOS
+    bool "FreeRTOS support"
+
+config UCOSII
+    bool "ucos-ii support"
+
+config UCOSIII
+    bool "ucos-iii support"
+
+config RT_THREAD
+    bool "rt-thread support"
+
+
+endchoice
+
+config KERNEL
+    string
+    default "FreeRTOS" if FREERTOS
+    default "ucosii" if UCOSII
+    default "ucosii" if UCOSIII
+    default "RT-Thread" if RT_THREAD
+    help
+      "Kernel name"

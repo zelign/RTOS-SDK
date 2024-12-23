@@ -1,0 +1,25 @@
+choice
+    prompt "Flash devices"
+config NOR_FLASH
+    bool "NOR Flash"
+if NOR_FLASH
+choice
+    prompt "Nor Flash devices"
+config BY25Q64AS
+    bool "BY25Q64AS support"
+endchoice
+endif
+
+
+config NAND_FLASH
+    bool "Nand Flash"
+if NAND_FLASH
+choice
+    prompt "Nand Flash devices"
+config TC58NVG0S3HTA00
+    bool "TC58NVG0S3HTA00 support"
+endchoice
+endif
+
+
+endchoice

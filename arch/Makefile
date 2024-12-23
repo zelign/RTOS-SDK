@@ -10,7 +10,13 @@
 
 #This makefile will be called by the top level Makefile
 include $(PRJ_ROOT_DIR)/scripts/fonts_color.mk
+
+ifeq ($(USE_KCONFIG), yes)
+include $(PRJ_ROOT_DIR)/output/.config
+else
 include $(BUILD_OUT)/config.mk
+ARCH_CORE :=
+endif
 
 SHELL := /bin/bash
 PWD := $(shell pwd)
@@ -26,7 +32,7 @@ C_DEFS =
 C_INCLUDES = -I$(PRJ_ROOT_DIR)/lib/include \
 			-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS)/$(MCUS) \
 			-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
-			-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/cortex-M4 \
+			-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/$(ARCH_CORE) \
 			-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/include \
 			-I$(PRJ_ROOT_DIR)/drivers/clock \
 			-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/include \
@@ -47,7 +53,7 @@ BUILD_SOURCE += $(ARCH_ASM_OBJ)
 BUILD_SOURCE += $(ARCH_OBJ)
 
 
-
+$(warning "MCU_PARA $(MCU_PARA)")
 all: info $(ARCH_ASM_OBJ) $(ARCH_OBJ)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
 	@ echo -e "$(GREEN)Compile ${notdir $(ARCH_OBJ)} OK$(END)"

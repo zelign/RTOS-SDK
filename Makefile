@@ -28,6 +28,10 @@ SHELL := /bin/bash
 CURDIR := $(PWD)
 
 -include $(CURDIR)/scripts/fonts_color.mk
+-include $(CURDIR)/.config 
+
+#use kconfig and menuconfig build macro system
+export USE_KCONFIG=yes
 
 #define message format
 BASH_COMPILE = echo "$(TERM_BOLD)Compiler:$(1)$(TERM_RESERT)"
@@ -35,27 +39,30 @@ MESSAGE = echo "$(TERM_BOLD)>>> $(1)$(TERM_RESERT) "
 TERM_BOLD := $(shell tput smso 2>/dev/null)
 TERM_RESERT := $(shell tput rmso 2>/dev/null)
 Q = @
-WRAP = 1
-WRAP_FLAGS :=
+
+#define wrap options
+WRAP = 0
+WRAP_FLAGS =
 
 ifeq ($(WRAP), 1)
 	WRAP_FLAGS += -Wl,--wrap=_malloc_r -Wl,--wrap=_free_r
-endif	
+endif
 
 #define directory of top level
 OUTPUT_DIR := $(CURDIR)/output
 PRJ_ROOT_DIR := $(CURDIR)
 
 #define compiler related paremeters
-COMPILER_DIR := $(PRJ_ROOT_DIR)/output/toolchain/bin
-# COMPILER_PREFIX = $(COMPILER_DIR)/arm-none-eabi-
-COMPILER_PREFIX = arm-none-eabi-
-CC = $(COMPILER_PREFIX)gcc
-AS = $(COMPILER_PREFIX)gcc -x assembler-with-cpp
-CP = $(COMPILER_PREFIX)objcopy
-SZ = $(COMPILER_PREFIX)size
-DP = $(COMPILER_PREFIX)objdump
-LD = $(COMPILER_PREFIX)ld
+ifeq ($(COMPILER),)
+COMPILER = arm-none-eabi
+endif
+
+CC = $(COMPILER)-gcc
+AS = $(COMPILER)-gcc -x assembler-with-cpp
+CP = $(COMPILER)-objcopy
+SZ = $(COMPILER)-size
+DP = $(COMPILER)-objdump
+LD = $(COMPILER)-ld
 
 CPU_PARA = -mcpu=cortex-m4
 FPU_PARA = -mfpu=fpv4-sp-d16
@@ -63,7 +70,7 @@ FLOAT_ABI = -mfloat-abi=hard
 #if use FLOAT_ABI, there will occur error during compiling.
 MCU_PARA = $(CPU_PARA) -mthumb $(FPU_PARA) $(FLOAT_ABI)
 LIB_DIR = -v
-LIBS = #-nostdlib -nodefaultlibs
+LIBS = -nostdlib
 
 #These parameters can be passed by the script file "build.sh", so
 #they are have no value before implement the command `make build`.
@@ -158,7 +165,7 @@ DRV_C_SRC_INCLUDES += $(DRV_INCLUDES) \
 					-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F
 
 DRV_FLAGS += $(MCU_PARA) $(C_DEFS) $(DRV_C_SRC_INCLUDES) -Wall -fdata-sections -ffunction-sections -fno-builtin-printf \
--fno-builtin-malloc -fno-builtin-free -O2
+-fno-builtin-malloc -fno-builtin-free -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-memcmp -O2
 C_FLAGS := $(DRV_FLAGS)
 export C_FLAGS DRV_FIND_DIR DRV_FLAGS DRV_INCLUDES
 
@@ -167,15 +174,13 @@ BUILD_OBJ_DIR := $(CURDIR)/arch $(CURDIR)/drivers $(DRV_FIND_DIR) $(CURDIR)/boar
 endif #DO_BUILD_SH
 #----------------------parameters init over ---------------------------------#
 
-#If directly execute `make` command, the Makefile will perform form all lable: all
-#That is to say, the lable all is the entry of this Makefile.
-#all: toolchain build_obj_first
+# Main targets
 all: build_obj_first
+
 build:
 	$(Q) $(call BASH_COMPILE, "arm-none-eabi-gcc")
 	$(Q) ./scripts/build.sh
 
-#this lable will extract toolchain to specific directory.
 toolchain:
 	$(Q) if [ ! -d "$(TOOLCHAIN_OUT)" ]; then \
 		$(call MESSAGE, "Extracting debug toolchain "); \
@@ -198,19 +203,24 @@ config.h:
 	$(foreach line,$(DRV_CFG),$(call config_h, $(line)))
 	$(call config_h_end)
 
-build_obj_first: config.mk config.h $(BUILD_OBJ_DIR)
+build_obj_first: autoconfig.h config.mk config.h $(BUILD_OBJ_DIR)
 
 clean:
+	$(Q) rm -v $(OUTPUT_DIR)/.config* $(OUTPUT_DIR)/autoconfig* $(OUTPUT_DIR)/source.txt
 	$(Q) rm -v $(OUTPUT_DIR)/arm*/build/*.o $(OUTPUT_DIR)/arm*/packages/*
 
 dist:
 	$(Q) rm -rfv $(OUTPUT_DIR)
 
-export KCONFIG_CONFIG := ./output/${ARCHS}-${BOARDS}-${MCUS}-${PRODUCTS}/packages/.config
+AUCOCONFIG_DIR := $(CURDIR)/output/
+INPUT_CONFIG := $(CURDIR)/products/$(PRODUCTS)/prj.cfg
+export KCONFIG_CONFIG := $(AUCOCONFIG_DIR).config
+
 menuconfig:
-	python3 ./scripts/menuconfig.py
+	$(Q) python3 ./scripts/menuconfig.py
+
+autoconfig.h: menuconfig
+	$(Q) python3 ./scripts/kconfig.py $(CURDIR)/Kconfig  $(AUCOCONFIG_DIR).config \
+	$(AUCOCONFIG_DIR)autoconfig.h $(AUCOCONFIG_DIR)source.txt $(AUCOCONFIG_DIR).config
 
 .PHONY: $(BUILD_OBJ_DIR) toolchain build clean
-
-	
-

@@ -5,24 +5,17 @@
 #include <sys/stat.h>
 #include "stdarg.h"
 
-// void *__wrap_malloc(struct _reent *reent, size_t size)
-// {
-// 	return pvPortMalloc(size);
-// }
+#if 1
+void *malloc(size_t size)
+{
+	return pvPortMalloc(size);
+}
 
-// int __wrap_strlen(const char *s)
-// {
-// 	return strlen(s);
-// }
-
-// int __wrap_printf(const char *format, ...) {
-//     va_list args;
-//     va_start(args, format);
-//     my_printf(format, args);
-//     va_end(args);
-//     return 0;
-// }
-
+void free(void *ptr)
+{
+	vPortFree(ptr);
+}
+#else
 void *__wrap__malloc_r(struct _reent *reent, size_t size)
 {
 	return pvPortMalloc(size);
@@ -32,7 +25,7 @@ void __wrap__free_r(struct _reent *reent, void *ptr)
 {
 	vPortFree(ptr);
 }
-
+#endif
 int _close(int file)
 {
 	return -1;

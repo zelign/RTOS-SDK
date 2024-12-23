@@ -1,0 +1,128 @@
+#define the first choice enter
+choice
+	prompt "Select a board"
+
+#if define CONFIG_ARM32 then select the boards that architecture is arm32
+if ARM32
+config STM32
+	bool "The Stm32 series boards"
+    depends on Cortex_M3 || Cortex_M4
+#if the boards is stm32 series
+if STM32
+if Cortex_M3
+choice
+	prompt "Stm32 Cortex-M3 series boards"
+
+config F103_ZET6
+	bool "Stm32F103ZET6 support"
+config F103_ZGT6
+	bool "Stm32F103ZGT6 support"
+endchoice #"Stm32 Cortex-M3 series boards"
+
+config BOARD_VERSION
+	string
+    default "f103zet6" if F103_ZET6
+    default "f103zgt6" if F103_ZGT6
+	help
+	  The STmicro series boards support
+
+endif #endif Cortex_M3
+
+
+if Cortex_M4
+choice
+	prompt "Stm32 Cortex-M4 series boards"
+
+config F407_ZET6
+	bool "Stm32F407ZET6 support"
+config F407_ZGT6
+	bool "Stm32F407ZGT6 support"
+endchoice #"Stm32 Cortex-M4 series boards"
+
+config BOARD_VERSION
+	string
+	default "f407zgt6" if F407_ZGT6
+    default "f407zet6" if F407_ZET6
+	help
+	  The STmicro series boards support
+endif #Cortex_M4
+
+
+config BOARD_NAME
+	string
+    default "stm32" if STM32
+	help
+	  Board name
+endif #endif STM32
+
+
+config NXP
+    bool "The NXP series boards"
+    depends on Cortex_A7
+
+if NXP
+if Cortex_A7
+#select nxp series boards
+choice
+    prompt "NXP series boards"
+
+config IMX6ULL
+    bool "I.MX6ULL board support"
+endchoice #"NXP series boards"
+
+config BOARD_VERSION
+	string
+	default "imx6ull" if IMX6ULL
+	help
+	  The NXP series boards support
+endif #endif Cortex_A7
+
+
+config BOARD_NAME
+	string
+    default "nxp" if NXP
+	help
+	  Board name
+endif #endif NXP
+
+
+endif #endif ARM32
+
+
+if MCS_51
+config STC
+    bool "The STC series boards"
+    depends on MCS_51
+
+if STC
+choice
+    prompt "STC series boards"
+config STC_89C51
+    bool "The Stc 89c51 suppport"
+config STC_89C52
+    bool "The Stc 89c52 suppport"
+config STC_89C51RC
+    bool "The Stc 89c51rc suppport"
+config STC_89C52RC
+    bool "The Stc 89c52rc suppport"
+
+endchoice
+
+config BOARD_VERSION
+	string
+	default "89c51" if STC_89C51
+    default "89c52" if STC_89C52
+    default "89c51rc" if STC_89C51RC
+    default "89c52rc" if STC_89C52RC
+	help
+	  The STC series boards support
+config BOARD_NAME
+	string
+    default "stc" if STC
+	help
+	  Board name
+
+endif #endif STC
+endif #endif MCS_51
+
+endchoice

@@ -1,0 +1,28 @@
+mainmenu "Main Menu"
+
+menu "Architecture Options"
+source "arch/Kconfig"
+endmenu
+
+menu "Boards Options"
+source "boards/Kconfig"
+endmenu
+
+menu "Driver Selection"
+source "drivers/Kconfig"
+endmenu
+
+menu "Kernel Selection"
+source "kernel/Kconfig"
+endmenu
+
+menu "Libraries Selection"
+source "lib/Kconfig"
+endmenu
+
+menu "Compile Options"
+config MCPU
+    string
+    default "-mcpu=cortex-m4" if Cortex_M4
+    default "-mcpu=cortex-m3" if Cortex_M3
+endmenu

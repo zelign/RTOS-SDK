@@ -1,0 +1,73 @@
+choice
+    prompt "Select Architecture"
+    default ARM32
+
+config ARM32
+    bool "ARM (32-bit architecture)"
+
+if ARM32
+choice
+    prompt "Select ARM Core"
+    default Cortex_M4
+
+config Cortex_M4
+    bool "ARM cortex-M4 Core"
+
+config Cortex_M3
+    bool "ARM cortex-M3 Core"
+config Cortex_A7
+    bool "ARM cortex-A7 Core"
+endchoice
+
+config CHIP_ARCH
+	string
+    default "Cortex-M3" if Cortex_M3
+    default "Cortex-M4" if Cortex_M4
+	help
+	  Select the ARM Core architecture.
+
+endif
+
+config ARM64
+    bool "ARM64 (64-bit architecture)"
+
+if ARM64
+choice
+    prompt "Select ARM64 Core"
+    default Cortex_A75
+
+config Cortex_A75
+    bool "ARM cortex-A75 Core"
+
+config Cortex_A35
+    bool "ARM cortex-A35 Core"
+endchoice
+
+config CHIP_ARCH
+	string
+    default "Cortex-A35" if Cortex_A35
+    default "Cortex-A75" if Cortex_A75
+	help
+	  Select the ARM64 Core architecture.
+endif
+
+config MCS_51
+    bool "MCS-51 series"
+
+if MCS_51
+choice
+    prompt "Select MCS-51 Core"
+    default C_8051
+
+config C_8051
+    bool "MCS-51 series Core"
+endchoice
+
+config CHIP_ARCH
+	string
+    default "8051" if C_8051
+	help
+	  Select the MCS-51 series Core architecture.
+endif
+
+endchoice

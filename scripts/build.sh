@@ -92,7 +92,7 @@ function package_env_config(){
 
 	case $2 in
 		"arm")
-			COMPILER=gcc
+			COMPILER=arm-none-eabi
 			COMPILER_KEYWORD=arm-none-eabi
 			if [ -n "$USE_SYSTEM_TOOLCHAIN" ]; then
 				echo -e "\033[34muse system compile toolchain\033[0m"

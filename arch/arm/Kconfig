@@ -1,0 +1,19 @@
+menu "ARM32 chip configuration"
+choice
+    prompt "Select ARM Core"
+    default CORTEX_M4
+
+config CORTEX_M4
+    bool "ARM cortex-M4 Core"
+
+config CORTEX_M3
+    bool "ARM cortex-M3 Core"
+endchoice
+
+config CHIP_CORE
+	string "Select the ARM Core"
+    default "Cortex-M3" if CORTEX_M3
+    default "Cortex-M4" if CORTEX_M4
+	help
+	  Select the ARM Core architecture.
+endmenu

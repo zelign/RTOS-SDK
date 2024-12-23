@@ -1,0 +1,19 @@
+rsource "flash/Kconfig"
+config CLOCK
+    bool "clock support"
+    default y
+config GPIO
+    bool "gpio support"
+    default y
+config LED
+    bool "led support"
+    default y
+config KEY
+    bool "key support"
+    default y
+config USART
+    bool "key support"
+    default y
+config SPI
+    bool "key support"
+    default y
