@@ -13,6 +13,7 @@ include $(PRJ_ROOT_DIR)/scripts/fonts_color.mk
 
 ifeq ($(USE_KCONFIG), yes)
 include $(PRJ_ROOT_DIR)/output/.config
+include $(BUILD_OUT)/config.mk
 else
 include $(BUILD_OUT)/config.mk
 ARCH_CORE :=
@@ -24,21 +25,6 @@ ARCH_DIR := $(PWD)
 #This variable is useful to obtain the directory named arch
 ARCH_DIR_SINGLE := $(shell basename $(ARCH_DIR))
 Q := @
-
-#define compiler related parameters
-C_DEFS =
-
-#define where to find the header files, it will increased as needed in future.
-C_INCLUDES = -I$(PRJ_ROOT_DIR)/lib/include \
-			-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS)/$(MCUS) \
-			-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
-			-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/$(ARCH_CORE) \
-			-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/include \
-			-I$(PRJ_ROOT_DIR)/drivers/clock \
-			-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/include \
-			-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F
-
-C_FLAGS += $(MCU_PARA) $(C_DEFS) $(C_INCLUDES) -Og -Wall -fdata-sections -ffunction-sections
 
 #define object file related variable
 ARCH_ASM_FILE := $(wildcard $(ARCH_DIR)/$(ARCHS)/*.s)
@@ -52,8 +38,6 @@ ARCH_ASM_OBJ := $(addprefix $(ARCH_OBJ_DIR)/, $(notdir $(ARCH_ASM_FILE:.s=.o)))
 BUILD_SOURCE += $(ARCH_ASM_OBJ)
 BUILD_SOURCE += $(ARCH_OBJ)
 
-
-$(warning "MCU_PARA $(MCU_PARA)")
 all: info $(ARCH_ASM_OBJ) $(ARCH_OBJ)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
 	@ echo -e "$(GREEN)Compile ${notdir $(ARCH_OBJ)} OK$(END)"

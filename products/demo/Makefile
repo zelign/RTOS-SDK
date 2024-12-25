@@ -16,22 +16,10 @@ DEMO_SRC_FILE := $(wildcard $(DEMO_DIR)/*.c)
 
 BUILD_SOURCE += $(BUILD_OUT)/main.o
 
-C_DEFS :=
-C_INCLUDES := -I$(INCLUDE_DIR) \
-			  -I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
-			  -I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/include \
-			  -I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS)/$(MCUS) \
-			  -I$(PRJ_ROOT_DIR)/lib/include \
-			  -I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/cortex-M4 \
-			  -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS \
-			  -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/include \
-			  -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F \
-			  -I$(DRV_INCLUDES) \
-			  -I$(PRJ_ROOT_DIR)/output
-
-C_FLAGS += $(MCU_PARA) $(C_DEFS) $(C_INCLUDES) -Og -Wall -fdata-sections -ffunction-sections
 DEMO_OBJ_DIR := $(BUILD_OUT)
 DEMO_C_OBJ := $(addprefix $(DEMO_OBJ_DIR)/, $(notdir $(DEMO_SRC_FILE:.c=.o)))
+LIBS = -nostdlib -v
+LD_OPTION += $(LIBS)
 
 all: info build_obj
 

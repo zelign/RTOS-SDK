@@ -12,7 +12,7 @@
 #include "nvic.h"
 #include "exti.h"
 #include "usart.h"
-#include "../output/config.h"
+#include "autoconfig.h"
 #include "FreeRTOS.h"
 #include "spi.h"
 #include "task.h"

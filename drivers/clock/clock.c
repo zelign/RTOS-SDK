@@ -6,7 +6,7 @@
 
 #include "clock.h"
 #include "initcall.h"
-#include "../../output/config.h"
+#include "autoconfig.h"
 
 /* This definition will be used to identify the clock source */
 #define HSE_CLK 1

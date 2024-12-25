@@ -1,11 +1,13 @@
 
 config CLI_LIB
     bool "Command line support"
+    default y
 
 if CLI_LIB
 
 choice
     prompt "Cli Selection"
+    default FREERTOS_CLI
 config FREERTOS_CLI
     bool "FreeRTOS provide cli"
 config LINUX_CLI
@@ -13,7 +15,7 @@ config LINUX_CLI
 endchoice
 config CLI
     string
-    default "FREERTOS_CLI" if FREERTOS_CLI
+    default "FreeRTOS_CLI" if FREERTOS_CLI
     default "Linux_CLI" if LINUX_CLI
     help
       CLI name

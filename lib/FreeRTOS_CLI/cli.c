@@ -11,8 +11,7 @@
 
 /* Utils includes. */
 #include "FreeRTOS_CLI.h"
-
-#include "../../output/config.h"
+#include "autoconfig.h"
 
 #define RED_LOG "\033[1;31m%s\033[0m"
 #define GREEN_LOG "\033[1;32m%s\033[0m"

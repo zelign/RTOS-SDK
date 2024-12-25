@@ -17,4 +17,4 @@ all: $(CLOCK_OBJ_FILE)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
 	@ echo -e "$(GREEN)Compile ${notdir $(CLOCK_OBJ_FILE)} OK$(END)"
 $(CLOCK_OBJ_FILE): $(CLOCK_C_FILE)
-	@ $(CC) $(DRV_FLAGS) -c $< -o $@
+	@ $(CC) $(C_FLAGS) -c $< -o $@

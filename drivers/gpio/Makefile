@@ -15,4 +15,4 @@ all: $(GPIO_OBJ_FILE)
 	@ echo "$(GREEN)Compile ${notdir $(GPIO_OBJ_FILE)} OK$(END)"
 
 $(GPIO_OBJ_FILE): $(GPIO_C_FILE)
-	@ $(CC) $(DRV_FLAGS) -c $< -o $@
+	@ $(CC) $(C_FLAGS) -c $< -o $@

@@ -12,6 +12,7 @@ if STM32
 if Cortex_M3
 choice
 	prompt "Stm32 Cortex-M3 series boards"
+	default F103_ZGT6
 
 config F103_ZET6
 	bool "Stm32F103ZET6 support"
@@ -32,6 +33,7 @@ endif #endif Cortex_M3
 if Cortex_M4
 choice
 	prompt "Stm32 Cortex-M4 series boards"
+	default F407_ZGT6
 
 config F407_ZET6
 	bool "Stm32F407ZET6 support"

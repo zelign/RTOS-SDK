@@ -18,7 +18,7 @@ function build_all() {
 	print_bold YELLOW "[3] START BUILD $BOARDS-$MCUS"
 
 	if [ -n "BUILD_START" ]; then
-		make --no-print-directory
+		make build --no-print-directory
 	else
 		echo -e "$BOLD$RED Have not find ${BUILD_PRJ_DIR}/board/$ARCHS/$MAKE file!**$END"
 		exit

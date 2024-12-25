@@ -16,4 +16,4 @@ all: $(USART_OBJ_FILE)
 	@ echo "$(GREEN)Compile ${notdir $(USART_OBJ_FILE)} OK$(END)"
 
 $(USART_OBJ_FILE): $(USART_C_FILE)
-	@ $(CC) $(DRV_FLAGS) -c $< -o $@
+	@ $(CC) $(C_FLAGS) -c $< -o $@

@@ -15,4 +15,4 @@ all: $(SPI_OBJ_FILE)
 	@ echo "$(GREEN)Compile ${notdir $(SPI_OBJ_FILE)} OK$(END)"
 
 $(SPI_OBJ_FILE): $(SPI_C_FILE)
-	@ $(CC) $(DRV_FLAGS) -c $< -o $@
+	@ $(CC) $(C_FLAGS) -c $< -o $@

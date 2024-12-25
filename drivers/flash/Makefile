@@ -15,4 +15,4 @@ all: $(FLASH_OBJ_FILE)
 	@ echo "$(GREEN)Compile ${notdir $(FLASH_OBJ_FILE)} OK$(END)"
 
 $(FLASH_OBJ_FILE): $(FLASH_C_FILE)
-	@ $(CC) $(DRV_FLAGS) -c $< -o $@
+	@ $(CC) $(C_FLAGS) -c $< -o $@

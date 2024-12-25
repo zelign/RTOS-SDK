@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 include $(PRJ_ROOT_DIR)/scripts/fonts_color.mk
 include $(BUILD_OUT)/config.mk
-include $(PRJ_ROOT_DIR)/output/config.h
+include $(PRJ_ROOT_DIR)/output/.config
 
 SHELL := /bin/bash
 PWD := $(shell pwd)
@@ -12,17 +12,6 @@ KERNEL_DIR := $(PWD)
 KERNEL_DIR_SINGLE := $(shell basename $(KERNEL_DIR))
 
 Q := @
-
-#define compiler related parameters
-C_DEFS =
-
-#define where to find the header files, it will increased as needed in future.
-C_INCLUDES = -I$(PRJ_ROOT_DIR)/lib/include \
-			 -I$(KERNEL_DIR)/include \
-			 -I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS)/ \
-			 -I$(KERNEL_DIR)/portable/GCC/ARM_CM4F
-
-C_FLAGS += $(MCU_PARA) $(C_DEFS) $(C_INCLUDES) -Og -Wall -fdata-sections -ffunction-sections
 
 #define object file related variable
 KERNEL_ASM_FILE := $(wildcard $(KERNEL_DIR)/*.s)

@@ -16,4 +16,4 @@ all: $(LED_OBJ_FILE)
 	@ echo "$(GREEN)Compile ${notdir $(LED_OBJ_FILE)} OK$(END)"
 
 $(LED_OBJ_FILE): $(LED_C_FILE)
-	@ $(CC) $(DRV_FLAGS) -c $< -o $@
+	@ $(CC) $(C_FLAGS) -c $< -o $@

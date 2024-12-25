@@ -12,21 +12,6 @@ include $(PRJ_ROOT_DIR)/scripts/fonts_color.mk
 BOARD_SRC_FILE := $(wildcard $(BOARD_DIR)/$(ARCHS)/$(BOARDS)/*.c)
 BOARD_C_OBJ := $(addprefix $(BOARD_BUILD_DIR)/, $(notdir $(BOARD_SRC_FILE:.c=.o)))
 
-# Copyright (c) 2021-2022 Simon. All rights reserved.
-
-# SPDX-License-Identifier: MIT
-
-#define compiler related
-C_DEFS :=
-C_INCLUDES := -I$(BOARD_DIR)/$(ARCHS)/$(BOARDS)/$(MCUS) \
-			  -I$(BOARD_DIR)/$(ARCHS)/$(BOARDS) \
-			  -I$(PRJ_ROOT_DIR)/lib/include \
-			  -I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/include \
-			  -I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/cortex-M4 \
-			  -I$(PRJ_ROOT_DIR)/drivers/led \
-			  -I$(PRJ_ROOT_DIR)/drivers/gpio \
-
-C_FLAGS += $(MCU_PARA) $(C_DEFS) $(C_INCLUDES) -Og -Wall -fdata-sections -ffunction-sections
 BUILD_SOURCE += $(BOARD_C_OBJ)
 
 all: info $(BOARD_C_OBJ)

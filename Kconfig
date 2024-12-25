@@ -21,8 +21,32 @@ source "lib/Kconfig"
 endmenu
 
 menu "Compile Options"
-config MCPU
+config CPU
     string
     default "-mcpu=cortex-m4" if Cortex_M4
     default "-mcpu=cortex-m3" if Cortex_M3
+config FPU
+    string
+    default "-mfpu=fpv4-sp-d16" if Cortex_M4
+
+config FLOAT_ABI
+    string
+    default "-mfloat-abi=hard" if Cortex_M4
+config INSTRCTION_SET
+    string
+    default "-mthumb" if Cortex_M4 || Cortex_M3
+choice
+    prompt "Whether use standard libraries"
+    default NO_STD_LIBS
+
+config USE_STD_LIBS
+    bool "YES"
+
+config NO_STD_LIBS
+    bool "No"
+
+endchoice
+config STD_LIBS
+    string
+    default "-nostdlib" if NO_STD_LIBS
 endmenu

@@ -3,7 +3,7 @@
 
 #include "system.h"
 #include "board_init.h"
-#include "../../output/config.h"
+#include "autoconfig.h"
 #include "spi.h"
 #include "gpio.h"
 

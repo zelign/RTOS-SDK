@@ -16,4 +16,4 @@ all: $(KEY_OBJ_FILE)
 	@ echo "$(GREEN)Compile ${notdir $(KEY_OBJ_FILE)} OK$(END)"
 
 $(KEY_OBJ_FILE): $(KEY_C_FILE)
-	@ $(CC) $(DRV_FLAGS) -c $< -o $@
+	@ $(CC) $(C_FLAGS) -c $< -o $@

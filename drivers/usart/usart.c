@@ -9,7 +9,7 @@
 #include "gpio.h"
 #include "led.h"
 #include "system.h"
-#include "../../output/config.h"
+#include "autoconfig.h"
 
 #define RECEIVE_SIZE 128
 // #define ENABLE_USART1_INT 1

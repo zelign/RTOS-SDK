@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 #NOTE: The Makefile will create a directory for toolchain, and the executation procedure
-#is top makefile(build)->build.sh->top makefile(build_obj_first)->arch makefile->board make file->...->
+#is top makefile(all)->build.sh->top makefile(build)->arch makefile->board make file->...->
 #product makefile->top makefile(link all object files)
 #====================================================================#
 #These variables are need to export to environment virable by build.sh:
@@ -38,7 +38,7 @@ BASH_COMPILE = echo "$(TERM_BOLD)Compiler:$(1)$(TERM_RESERT)"
 MESSAGE = echo "$(TERM_BOLD)>>> $(1)$(TERM_RESERT) "
 TERM_BOLD := $(shell tput smso 2>/dev/null)
 TERM_RESERT := $(shell tput rmso 2>/dev/null)
-Q = @
+export Q = @
 
 #define wrap options
 WRAP = 0
@@ -64,13 +64,14 @@ SZ = $(COMPILER)-size
 DP = $(COMPILER)-objdump
 LD = $(COMPILER)-ld
 
-CPU_PARA = -mcpu=cortex-m4
-FPU_PARA = -mfpu=fpv4-sp-d16
-FLOAT_ABI = -mfloat-abi=hard
+-include $(CURDIR)/output/.config
+
+CPU = $(subst ",,$(CONFIG_CPU))
+FPU = $(subst ",,$(CONFIG_FPU))
+FLOAT_ABI = $(subst ",,$(CONFIG_FLOAT_ABI))
+INSTRCTION_SET = $(subst ",,$(CONFIG_INSTRCTION_SET))
 #if use FLOAT_ABI, there will occur error during compiling.
-MCU_PARA = $(CPU_PARA) -mthumb $(FPU_PARA) $(FLOAT_ABI)
-LIB_DIR = -v
-LIBS = -nostdlib
+ARCH_PARA = $(CPU) $(INSTRCTION_SET) $(FPU) $(FLOAT_ABI)
 
 #These parameters can be passed by the script file "build.sh", so
 #they are have no value before implement the command `make build`.
@@ -81,8 +82,8 @@ ELF_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).elf
 HEX_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).hex
 LST_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).lst
 
-LD_OPTION = $(MCU_PARA) -T$(LD_SCRIPT) $(LIBS) $(LIB_DIR) -Wl,-Map=$(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).map,--cref,--gc-sections $(WRAP_FLAGS)
-export CC AS CP SZ DP MCU_PARA ELF_FILE HEX_FILE LST_FILE LD_OPTION PRJ_ROOT_DIR
+LD_OPTION := -T$(LD_SCRIPT) -Wl,-Map=$(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).map,--cref,--gc-sections $(WRAP_FLAGS)
+export CC AS CP SZ DP ARCH_PARA ELF_FILE HEX_FILE LST_FILE LD_OPTION PRJ_ROOT_DIR
 CROSS_COMPILER := $(TOOLCHAIN_SRC)/$(COMPILER)*$(COMPILER_KEYWORD)
 
 #####################################################################
@@ -153,31 +154,31 @@ $(foreach line,$(CFG_FILE_LINE),$(eval $(call process_line,$(line))))
 $(foreach line,$(DRV_CFG),$(eval $(call up_to_low,$(line))))
 $(foreach line,$(LOW_CFG),$(eval $(call get_find_dir, $(line))))
 
-DRV_C_SRC_INCLUDES += $(DRV_INCLUDES) \
-					-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
-					-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS)/$(MCUS) \
-					-I$(PRJ_ROOT_DIR)/lib/include \
-					-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/include \
-					-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/cortex-M4 \
-					-I$(PRJ_ROOT_DIR)/lib/FreeRTOS_CLI \
-					-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/include \
-					-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
-					-I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F
+INCLUDE_DIRS += $(DRV_INCLUDES) \
+				-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
+				-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS)/$(MCUS) \
+				-I$(PRJ_ROOT_DIR)/lib/include \
+				-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/include \
+				-I$(PRJ_ROOT_DIR)/arch/$(ARCHS)/$(subst ",,$(CONFIG_CHIP_ARCH)) \
+				-I$(PRJ_ROOT_DIR)/lib/$(subst ",,$(CONFIG_CLI)) \
+				-I$(PRJ_ROOT_DIR)/kernel/$(subst ",,$(CONFIG_KERNEL))/include \
+				-I$(PRJ_ROOT_DIR)/output \
 
-DRV_FLAGS += $(MCU_PARA) $(C_DEFS) $(DRV_C_SRC_INCLUDES) -Wall -fdata-sections -ffunction-sections -fno-builtin-printf \
--fno-builtin-malloc -fno-builtin-free -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-memcmp -O2
-C_FLAGS := $(DRV_FLAGS)
-export C_FLAGS DRV_FIND_DIR DRV_FLAGS DRV_INCLUDES
+ifeq ($(CONFIG_KERNEL), "FreeRTOS")
+INCLUDE_DIRS += -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/$(subst ",,$(CONFIG_FREERTOS_PORT))
+endif
+
+C_FLAGS += $(INCLUDE_DIRS) -Wall -fdata-sections -ffunction-sections -fno-builtin-printf \
+-fno-builtin-malloc -fno-builtin-free -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-memcmp -O2 $(ARCH_PARA)
+export C_FLAGS DRV_FIND_DIR
 
 #sub Makefile, and the execution sequence is determined by the variable.
-BUILD_OBJ_DIR := $(CURDIR)/arch $(CURDIR)/drivers $(DRV_FIND_DIR) $(CURDIR)/boards $(CURDIR)/kernel/FreeRTOS $(CURDIR)/lib $(CURDIR)/products/$(PRODUCTS)
+BUILD_OBJ_DIR := $(CURDIR)/arch $(CURDIR)/drivers $(CURDIR)/boards $(CURDIR)/kernel/FreeRTOS $(CURDIR)/lib $(CURDIR)/products/$(PRODUCTS)
 endif #DO_BUILD_SH
 #----------------------parameters init over ---------------------------------#
 
 # Main targets
-all: build_obj_first
-
-build:
+all: menuconfig
 	$(Q) $(call BASH_COMPILE, "arm-none-eabi-gcc")
 	$(Q) ./scripts/build.sh
 
@@ -203,7 +204,7 @@ config.h:
 	$(foreach line,$(DRV_CFG),$(call config_h, $(line)))
 	$(call config_h_end)
 
-build_obj_first: autoconfig.h config.mk config.h $(BUILD_OBJ_DIR)
+build: config.mk $(BUILD_OBJ_DIR)
 
 clean:
 	$(Q) rm -v $(OUTPUT_DIR)/.config* $(OUTPUT_DIR)/autoconfig* $(OUTPUT_DIR)/source.txt
@@ -218,8 +219,10 @@ export KCONFIG_CONFIG := $(AUCOCONFIG_DIR).config
 
 menuconfig:
 	$(Q) python3 ./scripts/menuconfig.py
+	$(Q) python3 ./scripts/kconfig.py $(CURDIR)/Kconfig  $(AUCOCONFIG_DIR).config \
+	$(AUCOCONFIG_DIR)autoconfig.h $(AUCOCONFIG_DIR)source.txt $(AUCOCONFIG_DIR).config
 
-autoconfig.h: menuconfig
+autoconfig.h:
 	$(Q) python3 ./scripts/kconfig.py $(CURDIR)/Kconfig  $(AUCOCONFIG_DIR).config \
 	$(AUCOCONFIG_DIR)autoconfig.h $(AUCOCONFIG_DIR)source.txt $(AUCOCONFIG_DIR).config
 

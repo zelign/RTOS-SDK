@@ -21,8 +21,8 @@ endchoice
 
 config CHIP_ARCH
 	string
-    default "Cortex-M3" if Cortex_M3
-    default "Cortex-M4" if Cortex_M4
+    default "cortex-M3" if Cortex_M3
+    default "cortex-M4" if Cortex_M4
 	help
 	  Select the ARM Core architecture.
 
@@ -45,8 +45,8 @@ endchoice
 
 config CHIP_ARCH
 	string
-    default "Cortex-A35" if Cortex_A35
-    default "Cortex-A75" if Cortex_A75
+    default "cortex-A35" if Cortex_A35
+    default "cortex-A75" if Cortex_A75
 	help
 	  Select the ARM64 Core architecture.
 endif

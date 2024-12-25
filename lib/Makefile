@@ -14,18 +14,6 @@ LIB_DIR_SINGLE := $(shell basename $(LIB_DIR))
 
 Q := @
 
-#define compiler related parameters
-C_DEFS =
-
-#define where to find the header files, it will increased as needed in future.
-C_INCLUDES = -I$(PRJ_ROOT_DIR)/lib/include \
-			 -I$(LIB_DIR) \
-			 -I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
-			 -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/include \
-			 -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/ARM_CM4F
-
-C_FLAGS += $(MCU_PARA) $(C_DEFS) $(C_INCLUDES) -Og -Wall -fdata-sections -ffunction-sections
-
 #define object file related variable
 SM_LIB_C_FILE := $(wildcard $(SM_LIB_DIR)/*.c)
 SM_LIB_S_FILE := $(wildcard $(SM_LIB_DIR)/*.S)

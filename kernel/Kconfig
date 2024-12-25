@@ -15,6 +15,12 @@ config RT_THREAD
 
 endchoice
 
+if FREERTOS
+config FREERTOS_PORT
+    string
+    default "ARM_CM4F" if Cortex_M4
+endif
+
 config KERNEL
     string
     default "FreeRTOS" if FREERTOS
