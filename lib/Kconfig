@@ -27,3 +27,22 @@ config SIM_LIBC
 config FLASH_CMD
     bool "flash command support"
     default y
+
+config FS
+    bool "File System support"
+if FS
+choice
+    prompt "Select a file system"
+config FAT
+    bool "Fat filesystem format"
+if FAT
+choice
+    prompt "Select a Fat filesysten"
+config FILEX
+    bool "FileX system"
+endchoice
+endif
+config EXT
+    bool "Ext filesystem format"
+endchoice
+endif
