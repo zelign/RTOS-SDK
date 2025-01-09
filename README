@@ -10,15 +10,4 @@ This is a readme!
 (3)Define commit template.
 	a) Location: ./scripts/CommitTemplate
 	b) I hope it same as Amlogic commit template in future.
-(4)Work memo:
-	a)The first step is to light a LED with the base architecture.
-		i)start assemble;
-		ii)linker script;
-		iii)gpio initial code(simple);
-		iv)main function;
-	b)dirvers software architecture;
-	c)serial function;
-	d)spi drivers;
-	e)iic drivers;
-	f)DMA drivers;
 	
