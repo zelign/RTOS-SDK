@@ -66,6 +66,10 @@ struct flash_partition {
 #define FLASH_NAME "BY25Q64AS"
 
 void spi_1_by25q64as_init(void);
+void by25q64as_read_data(enum spi_dev sd, unsigned int address, char *data, unsigned int data_len);
+int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsigned int data_len);
+void by25q64as_sector_erase(enum spi_dev sd, unsigned int address);
+void by25q64as_chip_erase(enum spi_dev sd);
 
 #endif // CONFIG_BY25Q64AS
 
