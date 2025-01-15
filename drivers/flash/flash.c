@@ -48,6 +48,11 @@ static struct flash_info *current_flash = NULL;
 static char *flash_buffer = NULL;
 static bool need_erase = FALSE, multi_program_flag = FALSE, flash_init_flag = FALSE;
 
+bool is_flash_init(void)
+{
+    return flash_init_flag;
+}
+
 struct flash_info * get_current_flash(void)
 {
     if (current_flash)

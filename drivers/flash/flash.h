@@ -70,6 +70,7 @@ void by25q64as_read_data(enum spi_dev sd, unsigned int address, char *data, unsi
 int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsigned int data_len);
 void by25q64as_sector_erase(enum spi_dev sd, unsigned int address);
 void by25q64as_chip_erase(enum spi_dev sd);
+struct flash_info * get_current_flash(void);
 
 #endif // CONFIG_BY25Q64AS
 

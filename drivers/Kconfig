@@ -12,8 +12,8 @@ config KEY
     bool "key support"
     default y
 config USART
-    bool "key support"
+    bool "USART support"
     default y
 config SPI
-    bool "key support"
+    bool "SPI support"
     default y

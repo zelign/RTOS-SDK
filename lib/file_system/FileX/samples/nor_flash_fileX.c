@@ -5,198 +5,13 @@
 #include "system.h"
 #include "FreeRTOS.h"
 #include "initcall.h"
+#include "fileX.h"
+#include "autoconfig.h"
+#include "flash.h"
+#include "task.h"
 
-
-/* Define what the initial system looks like.  */
-
-#ifndef FX_STANDALONE_ENABLE
-void    tx_application_define(void *first_unused_memory)
-{
-
-CHAR *pointer;
-
-    /* Put first available memory address into a character pointer.  */
-    pointer =  (CHAR *) first_unused_memory;
-
-    /* Put system definition stuff in here, e.g. thread creates and other assorted
-       create information.  */
-
-    /* Create the main thread.  */
-    tx_thread_create(&thread_0, "thread 0", thread_0_entry, 0,
-            pointer, DEMO_STACK_SIZE,
-            1, 1, TX_NO_TIME_SLICE, TX_AUTO_START);
-    pointer = pointer + DEMO_STACK_SIZE;
-
-    /* Save the memory pointer for the RAM disk.  */
-    ram_disk_memory =  pointer;
-
-    /* Initialize FileX.  */
-    fx_system_initialize();
-}
-
-#endif
-
-void    thread_0_entry(ULONG thread_input)
-{
-
-UINT  status;
-ULONG actual;
-CHAR  local_buffer[30];
-
-
-    /* Format the RAM disk - the memory for the RAM disk was setup in
-       tx_application_define above.  */
-    fx_media_format(&ram_disk,
-                    _fx_ram_driver,               // Driver entry
-                    ram_disk_memory,              // RAM disk memory pointer
-                    media_memory,                 // Media buffer pointer
-                    sizeof(media_memory),         // Media buffer size
-                    "MY_RAM_DISK",                // Volume Name
-                    1,                            // Number of FATs
-                    32,                           // Directory Entries
-                    0,                            // Hidden sectors
-                    256,                          // Total sectors
-                    512,                          // Sector size
-                    8,                            // Sectors per cluster
-                    1,                            // Heads
-                    1);                           // Sectors per track
-
-
-    /* Loop to repeat the demo over and over!  */
-    do
-    {
-
-        /* Open the RAM disk.  */
-        status =  fx_media_open(&ram_disk, "RAM DISK", _fx_ram_driver, ram_disk_memory, media_memory, sizeof(media_memory));
-
-        /* Check the media open status.  */
-        if (status != FX_SUCCESS)
-        {
-
-            /* Error, break the loop!  */
-            break;
-        }
-
-#ifdef FX_ENABLE_FAULT_TOLERANT
-        status = fx_fault_tolerant_enable(&ram_disk, fault_tolerant_memory, sizeof(fault_tolerant_memory));
-
-        if (status != FX_SUCCESS)
-        {
-
-            /* Fault tolerant enable error, break the loop.  */
-            break;
-        }
-#endif /* FX_ENABLE_FAULT_TOLERANT */
-
-        /* Create a file called TEST.TXT in the root directory.  */
-        status =  fx_file_create(&ram_disk, "TEST.TXT");
-
-        /* Check the create status.  */
-        if (status != FX_SUCCESS)
-        {
-
-            /* Check for an already created status. This is expected on the
-               second pass of this loop!  */
-            if (status != FX_ALREADY_CREATED)
-            {
-
-                /* Create error, break the loop.  */
-                break;
-            }
-        }
-
-        /* Open the test file.  */
-        status =  fx_file_open(&ram_disk, &my_file, "TEST.TXT", FX_OPEN_FOR_WRITE);
-
-        /* Check the file open status.  */
-        if (status != FX_SUCCESS)
-        {
-
-            /* Error opening file, break the loop.  */
-            break;
-        }
-
-        /* Seek to the beginning of the test file.  */
-        status =  fx_file_seek(&my_file, 0);
-
-        /* Check the file seek status.  */
-        if (status != FX_SUCCESS)
-        {
-
-            /* Error performing file seek, break the loop.  */
-            break;
-        }
-
-        /* Write a string to the test file.  */
-        status =  fx_file_write(&my_file, " ABCDEFGHIJKLMNOPQRSTUVWXYZ\n", 28);
-
-        /* Check the file write status.  */
-        if (status != FX_SUCCESS)
-        {
-
-            /* Error writing to a file, break the loop.  */
-            break;
-        }
-
-        /* Seek to the beginning of the test file.  */
-        status =  fx_file_seek(&my_file, 0);
-
-        /* Check the file seek status.  */
-        if (status != FX_SUCCESS)
-        {
-
-            /* Error performing file seek, break the loop.  */
-            break;
-        }
-
-        /* Read the first 28 bytes of the test file.  */
-        status =  fx_file_read(&my_file, local_buffer, 28, &actual);
-
-        /* Check the file read status.  */
-        if ((status != FX_SUCCESS) || (actual != 28))
-        {
-
-            /* Error reading file, break the loop.  */
-            break;
-        }
-
-        /* Close the test file.  */
-        status =  fx_file_close(&my_file);
-
-        /* Check the file close status.  */
-        if (status != FX_SUCCESS)
-        {
-
-            /* Error closing the file, break the loop.  */
-            break;
-        }
-
-        /* Close the media.  */
-        status =  fx_media_close(&ram_disk);
-
-        /* Check the media close status.  */
-        if (status != FX_SUCCESS)
-        {
-
-            /* Error closing the media, break the loop.  */
-            break;
-        }
-
-        /* Increment the thread counter, which represents the number
-           of successful passes through this loop.  */
-        thread_0_counter++;
-
-    } while (1);
-
-    /* If we get here the FileX test failed!  */
-    return;
-}
-
-static FX_MEDIA fx_nor_flash_media = {0};
-/* Buffer for FileX FX_MEDIA sector cache. This must be large enough for at least one
-   sector, which are typically 512 bytes in size.  */
-
-static unsigned char media_memory[512];
+static UCHAR * fx_media_memory_ptr = NULL;
+static FX_MEDIA * fx_user_media_ptr = NULL;
 
 extern VOID fx_nor_flash_media_driver(FX_MEDIA * media_ptr);
 
@@ -205,11 +20,52 @@ void nor_flash_fileX_handler ( void *pvParameters )
     (void) pvParameters;
     fx_system_initialize();
 	UINT fx_result = 0;
+    struct flash_info *fx_flash_disk_info_ptr = NULL;
+
+    fx_user_media_ptr = (FX_MEDIA *)malloc(sizeof(FX_MEDIA));
+    if (!fx_user_media_ptr) {
+        printf("Allocate memory for media ptr is FAILED!\n");
+        goto fail;
+    }
+    fx_media_memory_ptr = (UCHAR *)malloc(CONFIG_SECTOR_SIZE);
+
+    if (!is_flash_init()) {
+        printf("Please init flash first!\n");
+        goto fail;
+    }
+    fx_flash_disk_info_ptr = (struct flash_info *)malloc(sizeof(struct flash_info));
+
+    fx_flash_disk_info_ptr = get_current_flash();
+
+    /* Format the NOR Flash disk - the memory for the NOR Flash disk was setup in
+       tx_application_define above.  */
+    fx_result = fx_media_format(fx_user_media_ptr,
+                    fx_nor_flash_media_driver,               // Driver entry
+                    NULL,                                   // Nor flash disk memory pointer
+                    fx_media_memory_ptr,                    // Media buffer pointer
+                    CONFIG_SECTOR_SIZE,                     // Media buffer size
+                    "NOR FLASH",                            // Volume Name
+                    1,                                      // Number of FATs
+                    32,                                     // Number of Root Directory Entries
+                    0,                                      // Hidden sectors
+                    (fx_flash_disk_info_ptr->chip_size/fx_flash_disk_info_ptr->sector_size*fx_flash_disk_info_ptr->page_num),   // Total sectors
+                    ((fx_flash_disk_info_ptr->sector_size * 1024)/fx_flash_disk_info_ptr->page_num),                            // Sector size
+                    fx_flash_disk_info_ptr->page_num,       // Sectors per cluster
+                    0,                                      // Heads
+                    0);                                     // Sectors per track
+    if (fx_result != FX_SUCCESS) {
+        free(fx_user_media_ptr);
+		printf("Format media failed! %d\n", fx_result);
+		goto fail;
+	}
+    printf("Format media Success\n");
+#if 0
     fx_result = fx_media_open(&fx_nor_flash_media, "Nor Flash", fx_nor_flash_media_driver, NULL, &media_memory[0]);
 	if (fx_result != FX_SUCCESS) {
 		printf("Open media failed!\n");
 		goto fail;
 	}
+#endif
 fail:
 	vTaskDelete(NULL);
 }
@@ -225,6 +81,6 @@ void start_fileX(void)
 }
 
 #ifdef CONFIG_FILEX
-APP_INIT_2(start_fileX);
+APP_INIT_1(start_fileX);
 #endif
 

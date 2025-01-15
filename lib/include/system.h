@@ -79,6 +79,7 @@ void boot_init(void);
 void exit_error(void);
 void app_init(void);
 
+bool is_flash_init(void);
 void cli_console_init(void);
 
 /* define for memset */

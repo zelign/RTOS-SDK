@@ -58,7 +58,7 @@
 
 
 /* Determine if the optional FileX user define file should be used.  */
-
+#define FX_INCLUDE_USER_DEFINE_FILE
 #ifdef FX_INCLUDE_USER_DEFINE_FILE
 
 

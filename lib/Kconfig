@@ -40,6 +40,13 @@ choice
     prompt "Select a Fat filesysten"
 config FILEX
     bool "FileX system"
+if FILEX
+    config SECTOR_SIZE
+        int "media bytes of sector size"
+        default 256
+        range 256 1024
+endif
+
 endchoice
 endif
 config EXT

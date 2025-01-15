@@ -128,6 +128,7 @@
 /* Defined, gathering of media statistics is disabled.  */
 
 /*#define FX_MEDIA_STATISTICS_DISABLE  */
+#define FX_MEDIA_STATISTICS_DISABLE
 
 
 /* Defined, legacy single open logic for the same file is enabled.  */

@@ -5,10 +5,10 @@
 #include "autoconfig.h"
 
 #ifdef CONFIG_BY25Q64AS
-#define flash_read(sd, address, data, data_len) by25q64as_read_data(sd, address, data, data_len)
-#define flash_write(sd, address, data, data_len) by25q64as_read_write(sd, address, data, data_len)
-#define flash_sector_erase(sd, address) by25q64as_sector_erase(sd, address)
-#define flash_chip_erase(sd) by25q64as_chip_erase(sd)
+#define flash_storage_write(...) by25q64as_read_write(SPI_1, __VA_ARGS__)
+#define flash_storage_read(...) by25q64as_read_data(SPI_1, __VA_ARGS__)
+#define flash_sector_erase(...) by25q64as_sector_erase(SPI_1, __VA_ARGS__)
+#define flash_chip_erase() by25q64as_chip_erase(SPI_1)
 #endif
 
 #endif

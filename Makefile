@@ -32,7 +32,7 @@ CURDIR := $(PWD)
 
 #use kconfig and menuconfig build macro system
 export USE_KCONFIG=yes
-
+export BUILD_SOURCE =
 #define message format
 BASH_COMPILE = echo "$(TERM_BOLD)Compiler:$(1)$(TERM_RESERT)"
 MESSAGE = echo "$(TERM_BOLD)>>> $(1)$(TERM_RESERT) "
