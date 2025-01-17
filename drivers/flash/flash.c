@@ -76,7 +76,7 @@ static void by25q64as_wip_wait(void)
 {
     unsigned char cmd = READ_STATUS_REGISTER_1_CMD;
     unsigned char reg = 1;
-    while(reg & 0x01) {
+    while((reg & 0x01)) {
         FLASH_CS_LOW
         if (!spi_chk_busy(SPI_1)) {
             spi_trans(SPI_1, &cmd);
@@ -87,8 +87,6 @@ static void by25q64as_wip_wait(void)
         FLASH_DBG("Readed status register S7-S0 is 0x%x\n", reg);
         cmd = READ_STATUS_REGISTER_1_CMD;
     }
-    
-    // while ((reg & 0x01));
 }
 
 void by25q64as_read_data(enum spi_dev sd, unsigned int address, char *data, unsigned int data_len)
@@ -177,7 +175,6 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
 
     if ((SECTOR_SIZE != 0) && (PAGE_NUM != 0)) {
         bytes_per_page = SECTOR_SIZE / PAGE_NUM;
-        FLASH_DBG("bytes_per_page: %d\n", bytes_per_page);
     } else {
         printf("The sector size or page number is not correct!\n");
         return -1;
@@ -215,7 +212,7 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
 
             /* The page is empty, program directly */
             if (!need_erase) {
-                FLASH_DBG("This page is empty, program directly \n");
+                FLASH_DBG("This page is empty, program directly [%x-%x] \n", _data_ptr, _address);
                 WRITE_ENABLE
                 FLASH_CS_LOW
                 PAGE_PROGRAM(sd, cmd, _address, _data_ptr, _data_len, spi_trans);
@@ -250,21 +247,16 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
 
             /* If don't need erase, program directly */
             if (!need_erase) {
-                /* Calculate the sector base address for the given flash address */
-                unsigned int __address = (_address & ~0xfff);
 
                 /* Which page number is the address within a sector located in?  */
-                unsigned int page_num = (__address & 0xfff) / bytes_per_page;
-
-                cmd = PAGE_PROGRAM_CMD;
+                unsigned int page_num = (_address & 0xfff) / bytes_per_page;
                 _data_ptr = data;
                 /* Program the data directly into flash, one page at a time */
                 for (; page_num < PAGE_NUM; page_num ++) {
-                    __address += page_num * bytes_per_page;
-
+                    cmd = PAGE_PROGRAM_CMD;
                     WRITE_ENABLE
                     FLASH_CS_LOW
-                    PAGE_PROGRAM(sd, cmd, __address, _data_ptr,
+                    PAGE_PROGRAM(sd, cmd, ((_address & ~0xfff) + page_num * bytes_per_page), _data_ptr,
                         bytes_per_page, spi_trans);
                     FLASH_CS_HIGH
                     WAIT_WIP
@@ -276,6 +268,8 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
 
         /* If erasing is needed, it means that at least one sector must be read, erased and writted */
         if (need_erase) {
+
+            need_erase = FALSE;
 
             /* read - erase - write */
 
@@ -294,27 +288,17 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
             FLASH_DBG("Completion of erasing a sector\n");
 
             /* write a sector data into flash, one page at time */
-            unsigned int __address = (_address & ~0xfff);
-            cmd = PAGE_PROGRAM_CMD;
 
             for (unsigned int page_num = 0; page_num < PAGE_NUM; page_num ++) {
+                cmd = PAGE_PROGRAM_CMD;
                 WRITE_ENABLE
-                __address += page_num * bytes_per_page;
                 FLASH_CS_LOW
-                PAGE_PROGRAM(sd, cmd, __address, /* write to */
+                PAGE_PROGRAM(sd, cmd, ((_address & ~0xfff) + page_num * bytes_per_page), /* write to */
                     (flash_buffer_ptr + (page_num * bytes_per_page)), /* data from */
                     bytes_per_page, spi_trans);
                 FLASH_CS_HIGH
                 WAIT_WIP
             }
-
-            /* Completion of programming all the data */
-            if ((_address & ~0xFFF) == ((address + data_len) & ~0xFFF))
-                break;
-
-
-            // clear the erase flag
-            need_erase = FALSE;
         }
 
         /* if need accross-sector program, that means you need program the next sector */
@@ -342,6 +326,7 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
 
             continue;
         }
+        break;
     }
     return 0;
 }

@@ -22,7 +22,7 @@ VOID fx_nor_flash_media_driver(FX_MEDIA * media_ptr)
 		{
 			/* FLASH drivers are responsible for setting several fields in the 
 			   media structure, as follows:
-		
+
 					media_ptr -> fx_media_driver_free_sector_update
 					media_ptr -> fx_media_driver_write_protect
 		
@@ -78,13 +78,14 @@ VOID fx_nor_flash_media_driver(FX_MEDIA * media_ptr)
         }
 		case FX_DRIVER_WRITE:
 		{
-			printf("\nWriting to %ld sector ...!\n", media_ptr -> fx_media_driver_logical_sector);
+			printf("Write to sector %d...\n", (unsigned int)media_ptr -> fx_media_driver_logical_sector);
 			FX_ret = flash_storage_write((unsigned int)(media_ptr -> fx_media_driver_logical_sector * media_ptr->fx_media_bytes_per_sector), /* calculate the write address */
 					media_ptr->fx_media_driver_buffer, CONFIG_SECTOR_SIZE);
 			if (FX_ret != FX_SUCCESS) {
 				printf("Write to sector failed!\n");
 				media_ptr -> fx_media_driver_status =  FX_BOOT_ERROR;
 			}
+
 			media_ptr -> fx_media_driver_status =  FX_SUCCESS;
             break;
 		}
