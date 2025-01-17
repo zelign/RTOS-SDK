@@ -8,46 +8,6 @@
 #include "spi.h"
 #include "flash.h"
 
-static void print_memory(unsigned int start_addr, unsigned int length) {
-    unsigned char *ptr = (unsigned char *)start_addr;
-    unsigned int i;
-
-    for (i = 0; i < length; i++) {
-        if (i % 16 == 0) {
-            if (i != 0) {
-                printf("  ");
-                for (int j = i - 16; j < i; j++) {
-                    unsigned char c = ptr[j];
-                    if (c >= 32 && c <= 126)
-                        putc_usart1(c);
-                    else
-                        printf(".");
-                }
-            }
-            printf("\n");
-            printf("0x%x: ", (unsigned int)(ptr + i));
-        }
-        printf("%X ", ptr[i]);
-    }
-
-    if (i % 16 != 0) {
-        int padding = 16 - (i % 16);
-        for (int j = 0; j < padding; j++) {
-            printf("   ");
-        }
-
-        printf("  ");
-        for (int j = i - (i % 16); j < i; j++) {
-            unsigned char c = ptr[j];
-            if (c >= 32 && c <= 126)
-                putc_usart1(c);
-            else
-                printf(".");
-        }
-        printf("\n");
-    }
-}
-
 VOID fx_nor_flash_media_driver(FX_MEDIA * media_ptr)
 {
 	INT FX_ret = 0;
@@ -76,7 +36,6 @@ VOID fx_nor_flash_media_driver(FX_MEDIA * media_ptr)
 			   when this flag is set are returned as errors.  */
 		
 			/* Successful driver request.  */
-			flash_chip_erase();
 			media_ptr -> fx_media_driver_status =  FX_SUCCESS;
 			break;
 		}
@@ -102,14 +61,13 @@ VOID fx_nor_flash_media_driver(FX_MEDIA * media_ptr)
     	}
 		case FX_DRIVER_BOOT_WRITE:
 		{
-			print_memory(media_ptr->fx_media_driver_buffer, CONFIG_SECTOR_SIZE);
-			FX_ret = by25q64as_read_write(SPI_1, (unsigned int)FX_BOOT_RECORD_LOGIC_SECTOR, media_ptr->fx_media_driver_buffer, CONFIG_SECTOR_SIZE);
+			printf("\nWriting to boot sector ...!\n");
+			FX_ret = flash_storage_write((unsigned int)FX_BOOT_RECORD_LOGIC_SECTOR, media_ptr->fx_media_driver_buffer, CONFIG_SECTOR_SIZE);
 			if (FX_ret != FX_SUCCESS) {
 				printf("Write to boot sector failed!\n");
 				media_ptr -> fx_media_driver_status =  FX_BOOT_ERROR;
 			}
 			printf("\nWrite to boot sector success!\n");
-			print_memory(FX_BOOT_RECORD_LOGIC_SECTOR, CONFIG_SECTOR_SIZE);
 			media_ptr -> fx_media_driver_status =  FX_SUCCESS;
 			break;
 		}
@@ -120,6 +78,13 @@ VOID fx_nor_flash_media_driver(FX_MEDIA * media_ptr)
         }
 		case FX_DRIVER_WRITE:
 		{
+			printf("\nWriting to %ld sector ...!\n", media_ptr -> fx_media_driver_logical_sector);
+			FX_ret = flash_storage_write((unsigned int)(media_ptr -> fx_media_driver_logical_sector * media_ptr->fx_media_bytes_per_sector), /* calculate the write address */
+					media_ptr->fx_media_driver_buffer, CONFIG_SECTOR_SIZE);
+			if (FX_ret != FX_SUCCESS) {
+				printf("Write to sector failed!\n");
+				media_ptr -> fx_media_driver_status =  FX_BOOT_ERROR;
+			}
 			media_ptr -> fx_media_driver_status =  FX_SUCCESS;
             break;
 		}

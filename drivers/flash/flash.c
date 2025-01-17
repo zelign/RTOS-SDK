@@ -35,10 +35,13 @@ static struct flash_partition partitions[] = {
 };
 
 static struct flash_info *current_flash = NULL;
+static void by25q64as_write_enable(void);
 
 #ifdef CONFIG_SPI
 #ifdef CONFIG_BY25Q64AS
 
+#define WRITE_ENABLE by25q64as_write_enable();
+#define WAIT_WIP    by25q64as_wip_wait();
 #define SECTOR_SIZE (current_flash->sector_size * 1024)
 #define PAGE_NUM    (current_flash->page_num)
 #define BLOCK_SIZE  (current_flash->block_size * 1024)
@@ -46,7 +49,7 @@ static struct flash_info *current_flash = NULL;
 #define PAGE_LEN    (SECTOR_SIZE / PAGE_NUM)
 
 static char *flash_buffer = NULL;
-static bool need_erase = FALSE, multi_program_flag = FALSE, flash_init_flag = FALSE;
+static bool need_erase = FALSE, accross_sector_flag = FALSE, flash_init_flag = FALSE;
 
 bool is_flash_init(void)
 {
@@ -62,11 +65,30 @@ struct flash_info * get_current_flash(void)
 
 static void by25q64as_write_enable(void)
 {
-    unsigned char write_enable_cmd = 0x06;
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
+    unsigned char write_enable_cmd = CS_CMD;
+    FLASH_CS_LOW
     if (!spi_chk_busy(SPI_1))
         spi_trans(SPI_1, &write_enable_cmd);
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
+    FLASH_CS_HIGH
+}
+
+static void by25q64as_wip_wait(void)
+{
+    unsigned char cmd = READ_STATUS_REGISTER_1_CMD;
+    unsigned char reg = 1;
+    while(reg & 0x01) {
+        FLASH_CS_LOW
+        if (!spi_chk_busy(SPI_1)) {
+            spi_trans(SPI_1, &cmd);
+            cmd = 0xff;
+            reg = spi_trans(SPI_1, &cmd);
+        }
+        FLASH_CS_HIGH
+        FLASH_DBG("Readed status register S7-S0 is 0x%x\n", reg);
+        cmd = READ_STATUS_REGISTER_1_CMD;
+    }
+    
+    // while ((reg & 0x01));
 }
 
 void by25q64as_read_data(enum spi_dev sd, unsigned int address, char *data, unsigned int data_len)
@@ -74,9 +96,9 @@ void by25q64as_read_data(enum spi_dev sd, unsigned int address, char *data, unsi
     unsigned char read_data_cmd = READ_DATA_CMD;
     unsigned char cmd[3] = { (address >> 16) & 0xff, (address >> 8) & 0xff, address & 0xff };
     unsigned char write_cmd = 0xff;
-    char *data_p = data;
+    char *data_ptr = data;
 
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
+    FLASH_CS_LOW
     if (address & 0xff)
         printf("[Warning] Please align the address to page boundary (0x100) %x\n", address);
     if (!spi_chk_busy(sd)) {
@@ -85,28 +107,29 @@ void by25q64as_read_data(enum spi_dev sd, unsigned int address, char *data, unsi
         spi_trans(sd, &cmd[1]);
         spi_trans(sd, &cmd[2]);
         for (unsigned int i = 0; i < data_len; i++) {
-            *data_p = spi_trans(sd, &write_cmd);
-            data_p++;
+            *data_ptr = spi_trans(sd, &write_cmd);
+            data_ptr++;
         }
     } else {
         printf("busy!\n");
     }
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
+    FLASH_CS_HIGH
 }
 
 void by25q64as_sector_erase(enum spi_dev sd, unsigned int address)
 {
     unsigned char erase_cmd = 0x20;
     unsigned char adr[3] = { (address >> 16) & 0xff, (address >> 8) & 0xff, address & 0xff };
-
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
+    WRITE_ENABLE
+    FLASH_CS_LOW
     if (!spi_chk_busy(sd)) {
         spi_trans(sd, &erase_cmd);
         spi_trans(sd, &adr[0]);
         spi_trans(sd, &adr[1]);
         spi_trans(sd, &adr[2]);
     }
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
+    FLASH_CS_HIGH
+    WAIT_WIP
 }
 
 void by25q64as_chip_erase(enum spi_dev sd)
@@ -115,129 +138,210 @@ void by25q64as_chip_erase(enum spi_dev sd)
 
     while (spi_chk_busy(sd));
     printf("Erase all chip ... \n");
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
+    WRITE_ENABLE
+    FLASH_CS_LOW
     spi_trans(sd, &erase_cmd);
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
+    FLASH_CS_HIGH
 }
 
+/**
+ * @brief Write data to flash and support for multi-page programming
+ * 
+ * @param sd SPI Device
+ * @param address flash address will be programmed
+ * @param data data will programming
+ * @param data_len data length
+ * @return int 0:success
+ */
 int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsigned int data_len)
 {
-    unsigned char page_program_cmd = PAGE_PROGRAM_CMD;
-    char *flash_buf_p = NULL;
-    char *data_p = NULL;
-    unsigned int program_len_per = 0;
-    char *read_flash_data = NULL;
+    unsigned char cmd = PAGE_PROGRAM_CMD;
+    char *flash_buffer_ptr = NULL;
+    char *_data_ptr = NULL;
+    unsigned int bytes_per_page = 0;
+    unsigned int current_sector_num = 0;
+    unsigned int _data_len = data_len, _address = address;
+    unsigned int _programmed_len = 0;
 
-    if (address & 0xff) {
-        printf("Please align the address to page boundary (0x100) %x\n", address);
+    /* page alignment detection */
+    if (_address & 0xff) {
+        printf("Please align the address to page boundary (0x100) %x\n", _address);
         return -1;
     }
+
     // length detection
-    if (address + data_len > CHIP_SIZE) {
+    if (_address + _data_len > CHIP_SIZE) {
         printf("The data length is too long!\n");
         return -1;
     }
 
     if ((SECTOR_SIZE != 0) && (PAGE_NUM != 0)) {
-        program_len_per = SECTOR_SIZE / PAGE_NUM;
-        FLASH_DBG("program_len_per: %d\n", program_len_per);
+        bytes_per_page = SECTOR_SIZE / PAGE_NUM;
+        FLASH_DBG("bytes_per_page: %d\n", bytes_per_page);
     } else {
         printf("The sector size or page number is not correct!\n");
         return -1;
     }
 
     if (flash_buffer != NULL) {
-        flash_buf_p = flash_buffer;
+        flash_buffer_ptr = flash_buffer;
     } else {
         printf("The flash buffer is NULL!\n");
         return -1;
     }
 
     if (data != NULL) {
-        data_p = data;
+        _data_ptr = data;
     } else {
         printf("The data is NULL!\n");
         return -1;
     }
+    while (1) {
+        /* signal page programming */
+        if (_data_len <= bytes_per_page) {
 
-    if (data_len <= program_len_per) { //one page program
+            /* Read one page data from _address to flash buffer */
+            by25q64as_read_data(sd, _address, flash_buffer_ptr, bytes_per_page);
+            FLASH_DBG("Completion of reading a page \n");
 
-        read_flash_data = (char *)malloc(program_len_per);
-        if(!read_flash_data) {
-            printf("malloc read_flash_data failed!\n");
-            return -1;
-        }
+            /* Check whether the page is empty */
+            for (unsigned int offset = 0; offset < bytes_per_page; offset++) {
+                if (flash_buffer_ptr[offset] != 0xff) {
+                    need_erase = TRUE; //The page is not empty, its needs to be erased before it can be programmed
+                    FLASH_DBG("This page is not empty, need to erase \n");
+                    break;
+                }
+            }
 
-        memset(read_flash_data, 0, program_len_per);
-        FLASH_DBG("start read data:0x%x\n", address);
-        by25q64as_read_data(sd, address, read_flash_data, program_len_per);
-        FLASH_DBG("end read data\n");
-        unsigned int offset = 0;
+            /* The page is empty, program directly */
+            if (!need_erase) {
+                FLASH_DBG("This page is empty, program directly \n");
+                WRITE_ENABLE
+                FLASH_CS_LOW
+                PAGE_PROGRAM(sd, cmd, _address, _data_ptr, _data_len, spi_trans);
+                FLASH_CS_HIGH
+                WAIT_WIP
+                break;
+            }
+        /* mutiple page program */
+        } else {
+            /* Read a sector data to RAM(flash buffer) */
+            by25q64as_read_data(sd, (_address & ~0xfff), flash_buffer_ptr, SECTOR_SIZE);
 
-        for (offset = 0; offset < program_len_per; offset++) {
-            if (read_flash_data[offset] != 0xff) {
-                need_erase = TRUE;
-                FLASH_DBG("erase flag\n");
+            /* Confirm whether the position range that needs programming within the sector is empty */
+            for (unsigned int offset = (_address & 0xfff); offset < SECTOR_SIZE; offset++) {
+                if (flash_buffer_ptr[offset] != 0xff) {
+                    need_erase = TRUE;
+                    break;
+                }
+            }
+
+            /**
+             * @brief confirm that whether need set mutiple program flag
+             * (_address & ~0xfff) current sector number of _address.
+             * ((_address + _data_len) & ~0xfff) next sector number of _address + _data_len, if the value larger than current sector
+             * it's means need multiple page programming
+             */
+            if ((_address & ~0xfff) != ((_address + (data_len - _programmed_len)) & ~0xfff)) {
+                accross_sector_flag = TRUE;
+                current_sector_num = (_address & ~0xfff) / SECTOR_SIZE;
+            }
+                
+
+            /* If don't need erase, program directly */
+            if (!need_erase) {
+                /* Calculate the sector base address for the given flash address */
+                unsigned int __address = (_address & ~0xfff);
+
+                /* Which page number is the address within a sector located in?  */
+                unsigned int page_num = (__address & 0xfff) / bytes_per_page;
+
+                cmd = PAGE_PROGRAM_CMD;
+                _data_ptr = data;
+                /* Program the data directly into flash, one page at a time */
+                for (; page_num < PAGE_NUM; page_num ++) {
+                    __address += page_num * bytes_per_page;
+
+                    WRITE_ENABLE
+                    FLASH_CS_LOW
+                    PAGE_PROGRAM(sd, cmd, __address, _data_ptr,
+                        bytes_per_page, spi_trans);
+                    FLASH_CS_HIGH
+                    WAIT_WIP
+                    _data_ptr += bytes_per_page;
+                }
                 break;
             }
         }
-            
-        FLASH_DBG("Free read_flash_data\n");
-        free(read_flash_data);
-        FLASH_DBG("offset: %d\n", offset);
-        if (offset == program_len_per) {//The page is empty, program directly
-            FLASH_DBG("page program\n");
-            gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
-            PAGE_PROGRAM(sd, page_program_cmd, address, data_p, data_len, spi_trans);
-            gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
-        }
-    /* mutiple page program */
-    } else {
-        // confirm that whether need set erase flag by read current sector data to RAM
-        by25q64as_read_data(sd, (address & ~0xfff), flash_buf_p, SECTOR_SIZE);
-        //I need traverse the flash buffer from the offset of the address to confirm whether need erase the sector
-        unsigned int offset = 0; //get the offset of the address in the sector
 
-        for (offset = (address & 0xfff); offset < SECTOR_SIZE; offset++)
-            if (flash_buf_p[offset] != 0xff) { //confirm that the remain data in the sector is empty
-                need_erase = TRUE; //the remaining space in the sector is not empty, need erase
-                break;
+        /* If erasing is needed, it means that at least one sector must be read, erased and writted */
+        if (need_erase) {
+
+            /* read - erase - write */
+
+            /* read a sector size data to flash buffer */
+            memset(flash_buffer_ptr, 0, SECTOR_SIZE);
+            by25q64as_read_data(sd, (_address & ~0xfff), flash_buffer_ptr, SECTOR_SIZE);
+
+            /* write data into RAM */
+            _data_ptr = data;
+            for (unsigned int i = (_address & 0xfff); (i < SECTOR_SIZE) && (i < _data_len); i++)
+                flash_buffer_ptr[i] = *_data_ptr++;
+
+            /* erase a sector */
+            by25q64as_sector_erase(sd, (_address & ~0xfff));
+
+            FLASH_DBG("Completion of erasing a sector\n");
+
+            /* write a sector data into flash, one page at time */
+            unsigned int __address = (_address & ~0xfff);
+            cmd = PAGE_PROGRAM_CMD;
+
+            for (unsigned int page_num = 0; page_num < PAGE_NUM; page_num ++) {
+                WRITE_ENABLE
+                __address += page_num * bytes_per_page;
+                FLASH_CS_LOW
+                PAGE_PROGRAM(sd, cmd, __address, /* write to */
+                    (flash_buffer_ptr + (page_num * bytes_per_page)), /* data from */
+                    bytes_per_page, spi_trans);
+                FLASH_CS_HIGH
+                WAIT_WIP
             }
 
-        // confirm that whether need set mutiple program flag
-        if ((address & ~0xfff) != ((address + data_len) & ~0xfff))
-            multi_program_flag = TRUE;  //at least over one sector, need mutiple program
+            /* Completion of programming all the data */
+            if ((_address & ~0xFFF) == ((address + data_len) & ~0xFFF))
+                break;
 
-        if (offset == SECTOR_SIZE) { //The sector is empty, program directly
-            gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
-            PAGE_PROGRAM(sd, page_program_cmd, address, data_p,
-                (multi_program_flag?(SECTOR_SIZE - (address & 0xfff)):data_len), spi_trans);
-            gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
+
+            // clear the erase flag
+            need_erase = FALSE;
         }
-    }
 
-    /* If erasing is needed, it means that at least one sector must be read, erased and writted */
-    if (need_erase) {
-        FLASH_DBG("need erase\n");
-        /* write data into RAM */
-        for (unsigned int i = (address & 0xfff); i < SECTOR_SIZE && i < data_len; i++)
-            flash_buf_p[i] = *data_p++; //It well important that the data_p must be increased
+        /* if need accross-sector program, that means you need program the next sector */
+        if (accross_sector_flag) {
 
-        FLASH_DBG("start erase\n");
-        // erase sector
-        by25q64as_sector_erase(sd, (address & ~0xfff));
-        FLASH_DBG("start program\n");
-        // write the sector data into flash
-        gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
-        PAGE_PROGRAM(sd, page_program_cmd, (address & ~0xfff), flash_buf_p, SECTOR_SIZE, spi_trans);
-        gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
-        // clear the erase flag
-        need_erase = FALSE;
-    }
+            accross_sector_flag = FALSE;
 
-    if (multi_program_flag) { //if need mutiple program, that means you need program the next sector
-        multi_program_flag = FALSE;
-        by25q64as_read_write(sd, ((address + data_len) & ~0xfff), data_p, (data_len - (SECTOR_SIZE - (address & 0xfff))));
+            /* update the critical parameters */
+
+            /* Calculate the length has been programmed */
+            _programmed_len = (((current_sector_num + 1) * SECTOR_SIZE) - (address & ~0xFFF) - (address & 0xFFF));
+
+            /* Completion of programming all the data */
+            if (_programmed_len == data_len)
+                break;
+
+            /* Update the source data pointer */
+            _data_ptr = data + _programmed_len;
+
+            /* Update the next programming address within flash */
+            _address = (current_sector_num + 1) * SECTOR_SIZE;
+
+            /* Calculate the length for the next programming */
+            _data_len = (data_len - _programmed_len < SECTOR_SIZE)?(data_len - _programmed_len):(SECTOR_SIZE);
+
+            continue;
+        }
     }
     return 0;
 }
@@ -257,7 +361,7 @@ static void get_by25q64as_device_id(enum spi_dev sd, unsigned int *dev_id)
 {
     unsigned char get_id_cmd = MANUFACTURER_CMD;
 
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
+    FLASH_CS_LOW
     if (!spi_chk_busy(sd)) {
         spi_trans(sd, &get_id_cmd);
         get_id_cmd = 0;
@@ -269,7 +373,7 @@ static void get_by25q64as_device_id(enum spi_dev sd, unsigned int *dev_id)
         *dev_id <<= 8;
         *dev_id |= spi_trans(sd, &get_id_cmd);
     }
-    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
+    FLASH_CS_HIGH
 }
 
 struct flash_info * find_flash_by_id(enum spi_dev sd, unsigned int id)
@@ -339,12 +443,7 @@ void by25q64as_flash_test(enum spi_dev sd, unsigned int write_addr)
     printf("***********BY25Q64AS page program test 0x%x***********\n", write_addr);
     printf("Write: BY25Q64AS in 0x%x len %d\n", write_addr, strlen(FLASH_NAME));
 
-    by25q64as_write_enable();
-    for (unsigned long i = 0; i < 50; i++, write_addr += 256) {
-        printf("Write: 0x%x\n", write_addr);
-        by25q64as_read_write(sd, write_addr, "abcdefghijklmnopqRSTXYZ1234567890/*-+!@#$^&*()", strlen("abcdefghijklmnopqRSTXYZ1234567890/*-+!@#$^&*()"));
-    }
-    // by25q64as_read_write(sd, write_addr, FLASH_NAME, strlen(FLASH_NAME));
+    by25q64as_read_write(sd, write_addr, FLASH_NAME, strlen(FLASH_NAME));
 
     printf("***********BY25Q64AS read data test***********\n");
 

@@ -38,14 +38,15 @@ struct flash_partition {
         function(sd, &cmd); \
         for (unsigned int i = 0; i < src_len; i++){ \
             function(sd, &src[i]); }
-#define ERASE_ALL(sd) \
-    sm_printf("Erase all chip ... \n"); \
-    by25q64as_chip_erase(sd); \
-    sm_printf("Over! \n"); \
+
+#define FLASH_CS_LOW    gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, RESET);
+#define FLASH_CS_HIGH   gpio_pin_cfg(SPI1_GPIO, FLASH_CS_Pin, SET);
 
 #ifdef CONFIG_BY25Q64AS
 
 /* Flash commands defination */
+#define READ_STATUS_REGISTER_1_CMD 0x05
+#define CS_CMD              0x06
 #define PAGE_PROGRAM_CMD    0x02
 #define FAST_PAGE_PROGRAM_CMD   0xF2
 #define WRITE_ENABLE_CMD    0x06

@@ -18,8 +18,8 @@ BUILD_SOURCE += $(BUILD_OUT)/main.o
 
 DEMO_OBJ_DIR := $(BUILD_OUT)
 DEMO_C_OBJ := $(addprefix $(DEMO_OBJ_DIR)/, $(notdir $(DEMO_SRC_FILE:.c=.o)))
-LIBS = -nostdlib -v
-LD_OPTION += $(LIBS)
+VERBOSE = -v
+LD_OPTION += $(VERBOSE)
 
 all: info build_obj
 
@@ -30,7 +30,7 @@ build_prj: $(HEX_FILE)
 	@ $(DP) --source --all-headers --demangle --file-headers --line-numbers --wide $(ELF_FILE) > $(LST_FILE)
 
 #BUILD_SOURCE, it define is top of this file.
-$(ELF_FILE): $(BUILD_SOURCE)
+$(ELF_FILE):
 	@ echo -e "$(GREEN)$(BOLD)*********************** START LINK ALL OBJ! ***********************$(END)"
 	@ $(CC) $(BUILD_SOURCE) $(LD_OPTION) -o $@
 

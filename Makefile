@@ -82,7 +82,7 @@ ELF_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).elf
 HEX_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).hex
 LST_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).lst
 
-LD_OPTION := -T$(LD_SCRIPT) -Wl,-Map=$(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).map,--cref,--gc-sections $(WRAP_FLAGS)
+LD_OPTION := -T$(LD_SCRIPT) -Wl,-Map=$(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).map,--cref,--gc-sections $(WRAP_FLAGS) $(CONFIG_STD_LIBS)
 export CC AS CP SZ DP ARCH_PARA ELF_FILE HEX_FILE LST_FILE LD_OPTION PRJ_ROOT_DIR
 CROSS_COMPILER := $(TOOLCHAIN_SRC)/$(COMPILER)*$(COMPILER_KEYWORD)
 
@@ -154,7 +154,7 @@ $(foreach line,$(CFG_FILE_LINE),$(eval $(call process_line,$(line))))
 $(foreach line,$(DRV_CFG),$(eval $(call up_to_low,$(line))))
 $(foreach line,$(LOW_CFG),$(eval $(call get_find_dir, $(line))))
 
-INCLUDE_DIRS += $(DRV_INCLUDES) \
+INCLUDE_DIRS +=	$(DRV_INCLUDES) \
 				-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS) \
 				-I$(PRJ_ROOT_DIR)/boards/$(ARCHS)/$(BOARDS)/$(MCUS) \
 				-I$(PRJ_ROOT_DIR)/lib/include \

@@ -47,7 +47,6 @@ endif
 
 all: info $(SM_LIB_C_OBJ) $(SM_LIB_S_OBJ) $(CLI_OBJ) $(FS_LIB_DIR)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
-	@ echo -e "$(GREEN)Compile library:${notdir ${SM_LIB_C_OBJ}} ${notdir ${SM_LIB_S_OBJ}} ${notdir ${CLI_OBJ}} OK$(END)"
 	@ echo -e "	$(CYAN)Compile OK! $(LIB_LIBC_C_FILEDIR)$(END)"
 info:
 	@ echo -e "$(YELLOW)$(BOLD)[8] INTO $(UNDERLINE)$(LIB_DIR_SINGLE)$(END) $(YELLOW)$(BOLD)COMPILE...$(END)"
