@@ -442,6 +442,11 @@ void by25q64as_flash_test(enum spi_dev sd, unsigned int write_addr)
     else
         printf("Flash test failed: %s\n\n", read_data);
     free(read_data);
+    // printf("***********BY25Q64AS accorss sector program test ***********\n");
+    // read_data = (char *)malloc(4096);
+    // memset(read_data, 6, 4096);
+
+    // by25q64as_read_write(sd, 1024, read_data, 4096);
 }
 
 void by25q64as_init(enum spi_dev sd)

@@ -1,13 +1,10 @@
 This is a readme!
-(1)Compile ways:
-	source scripts/select.sh
-	make build
-(2)Toolchain is ARM GNU Toolchain.
+Toolchain is ARM GNU Toolchain.
 	a) Downloader address:https://developer.arm.com/downloads/-/gnu-a
 	b) Version: https://developer.arm.com/downloads/-/gnu-a
 	c) Location: Projects dirctory/../toolchain/arm/
 	d) The name is: gcc-arm-10.3-2021.07-x86_64-arm-none-eabi.tar.xz 
-(3)Define commit template.
+Define commit template.
 	a) Location: ./scripts/CommitTemplate
-	b) I hope it same as Amlogic commit template in future.
+
 	

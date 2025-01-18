@@ -151,7 +151,7 @@
    uses, the macros are setup to utilize a ThreadX mutex for multiple thread
    access control into an open media.  */
 
-/* #define FX_SINGLE_THREAD   */
+#define FX_SINGLE_THREAD
 
 
 /* Defined, Filex will be used in standalone mode (without ThreadX) */
@@ -215,7 +215,7 @@
 
 /* Defined, build options is disabled.  */
 
-/*#define FX_DISABLE_BUILD_OPTIONS   */
+#define FX_DISABLE_BUILD_OPTIONS
 
 
 /* Defined, one line function is disabled.  */
@@ -225,12 +225,12 @@
 
 /* Defined, FAT entry refresh is disabled.  */
 
-/*#define FX_DIABLE_FAT_ENTRY_REFRESH   */
+#define FX_DIABLE_FAT_ENTRY_REFRESH
 
 
 /* Defined, consecutive detect is disabled.  */
 
-/*#define FX_DISABLE_CONSECUTIVE_DETECT   */
+#define FX_DISABLE_CONSECUTIVE_DETECT
 
 
 #endif
