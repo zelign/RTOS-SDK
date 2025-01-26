@@ -45,6 +45,6 @@ Choice your project: # Choose your projects
 make #The make command will invoke `make menuconfig`, allowing you configure it according your requirements.
 #The executable file is stored in output/xxx/package, and this directory also contains .map and .lst file for you debugging purpose.
 ```
-The more detailler informations please reference to /doc/technical_manual.md
+The more detailed information please reference to /doc/technical_manual.md
 
 	
