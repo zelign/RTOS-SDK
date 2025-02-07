@@ -12,21 +12,21 @@
 #include "autoconfig.h"
 
 #define RECEIVE_SIZE 128
-// #define ENABLE_USART1_INT 1
+// #define CONFIG_USART_IRQ_TRIGGER 1
 
 static char receive_array[RECEIVE_SIZE];
 
 static struct _usart1_t {
     volatile unsigned char index;
     char *priv;
-#ifdef ENABLE_USART1_INT
+#ifdef CONFIG_USART_IRQ_TRIGGER
     volatile unsigned short getc_buf;
     volatile bool putc_flag;
     volatile bool getc_flag;
     volatile bool puts_flag;
 #endif
 } usart1_t = {
-#ifdef ENABLE_USART1_INT
+#ifdef CONFIG_USART_IRQ_TRIGGER
     .putc_flag = FALSE,
     .getc_flag = FALSE,
     .puts_flag = FALSE,
@@ -39,7 +39,7 @@ static inline void set_baud_rate(unsigned int baud)
 {
     unsigned char over8 = ((USART1_CR1 >> 15) & (0x1));
     unsigned int div_m = (84*1000000)/(baud * 8 * (2 - over8));
-    unsigned int div_f = (unsigned char)((((/*(double)*/_apb2_frq*1000000)/(/*(double)*/(baud * 8 * (2 - over8)))) - div_m) * 16);
+    unsigned int div_f = (unsigned char)(((((double)_apb2_frq*1000000)/(/*(double)*/(baud * 8 * (2 - over8)))) - div_m) * 16);
     USART1_BRR &= ~(0xffff);
     USART1_BRR |= (div_m << 4);
     USART1_BRR |= div_f;
@@ -100,7 +100,7 @@ void usart1_init()
     USART1_ENABLE_RE;
     USART1_ENABLE_TE;
 
-#ifdef ENABLE_USART1_INT
+#ifdef CONFIG_USART_IRQ_TRIGGER
     // USART1_ENABLE_TXE_IE;
     USART1_ENABLE_RXNE_IE;
     USART1_ENABLE_IDLE_IE;
@@ -152,7 +152,7 @@ char getc_usart1_loop (bool *flag)
     return USART1_DR & (0xff);
 }
 
-#ifndef ENABLE_USART1_INT
+#ifndef CONFIG_USART_IRQ_TRIGGER
 
 static inline unsigned short getc_usart1 (void)
 {

@@ -14,6 +14,18 @@ config KEY
 config USART
     bool "USART support"
     default y
+if USART
+
+choice
+    prompt "Choose trigger mode"
+    default USART_LOOP_TRIGGER
+config USART_LOOP_TRIGGER
+    bool "loop trigger"
+config USART_IRQ_TRIGGER
+    bool "irq trigger"
+endchoice
+endif
+
 config SPI
     bool "SPI support"
     default y
