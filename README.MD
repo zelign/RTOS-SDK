@@ -1,4 +1,5 @@
 # RTOS_SDK
+![Static Badge](https://img.shields.io/badge/version-v0.1.0-red) ![Static Badge](https://img.shields.io/badge/label-rtos sdk-blue)
 The RTOS_SDK provide rapid development components for rtos kernels, like freertos. It supports multiple architectures, such as arm, riscv, 8051, etc, and supports various components, such as fs, cli, and more.
 ## Features
 ### Architectures
