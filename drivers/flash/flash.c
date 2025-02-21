@@ -84,7 +84,6 @@ static void by25q64as_wip_wait(void)
             reg = spi_trans(SPI_1, &cmd);
         }
         FLASH_CS_HIGH
-        //FLASH_DBG("Readed status register S7-S0 is 0x%x\n", reg);
         cmd = READ_STATUS_REGISTER_1_CMD;
     }
 }
@@ -440,11 +439,6 @@ void by25q64as_flash_test(enum spi_dev sd, unsigned int write_addr)
     else
         printf("Flash test failed: %s\n\n", read_data);
     free(read_data);
-    // printf("***********BY25Q64AS accorss sector program test ***********\n");
-    // read_data = (char *)malloc(4096);
-    // memset(read_data, 6, 4096);
-
-    // by25q64as_read_write(sd, 1024, read_data, 4096);
 }
 
 void by25q64as_init(enum spi_dev sd)
@@ -498,7 +492,7 @@ void spi_1_by25q64as_init(void)
 
 #ifdef CONFIG_FLASH_CMD
 
-void hexdump_flash_memort(unsigned int start_addr, unsigned int length, unsigned int offset) {
+static void hexdump_flash_memort(unsigned int start_addr, unsigned int length, unsigned int offset) {
     unsigned char *ptr = (unsigned char *)start_addr;
     unsigned int i;
 
