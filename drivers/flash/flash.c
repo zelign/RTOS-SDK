@@ -84,7 +84,7 @@ static void by25q64as_wip_wait(void)
             reg = spi_trans(SPI_1, &cmd);
         }
         FLASH_CS_HIGH
-        FLASH_DBG("Readed status register S7-S0 is 0x%x\n", reg);
+        //FLASH_DBG("Readed status register S7-S0 is 0x%x\n", reg);
         cmd = READ_STATUS_REGISTER_1_CMD;
     }
 }
@@ -141,7 +141,6 @@ void by25q64as_chip_erase(enum spi_dev sd)
     spi_trans(sd, &erase_cmd);
     FLASH_CS_HIGH
 }
-
 /**
  * @brief Write data to flash and support for multi-page programming
  * 
@@ -279,16 +278,14 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
 
             /* write data into RAM */
             _data_ptr = data;
-            for (unsigned int i = (_address & 0xfff); (i < SECTOR_SIZE) && (i < _data_len); i++)
+            for (unsigned int i = (_address & 0xfff); (i < SECTOR_SIZE) && (i < ((_address & 0xfff) + _data_len)); i++)
                 flash_buffer_ptr[i] = *_data_ptr++;
 
             /* erase a sector */
             by25q64as_sector_erase(sd, (_address & ~0xfff));
 
             FLASH_DBG("Completion of erasing a sector\n");
-
-            /* write a sector data into flash, one page at time */
-
+            
             for (unsigned int page_num = 0; page_num < PAGE_NUM; page_num ++) {
                 cmd = PAGE_PROGRAM_CMD;
                 WRITE_ENABLE
@@ -298,6 +295,7 @@ int by25q64as_read_write(enum spi_dev sd, unsigned int address, void *data, unsi
                     bytes_per_page, spi_trans);
                 FLASH_CS_HIGH
                 WAIT_WIP
+                FLASH_DBG("page_num %d\n", page_num);
             }
         }
 
@@ -500,7 +498,7 @@ void spi_1_by25q64as_init(void)
 
 #ifdef CONFIG_FLASH_CMD
 
-static void print_memory(unsigned int start_addr, unsigned int length) {
+void hexdump_flash_memort(unsigned int start_addr, unsigned int length, unsigned int offset) {
     unsigned char *ptr = (unsigned char *)start_addr;
     unsigned int i;
 
@@ -517,7 +515,7 @@ static void print_memory(unsigned int start_addr, unsigned int length) {
                 }
             }
             printf("\n");
-            printf("0x%x: ", (unsigned int)(ptr + i));
+            printf("0x%x: ", (unsigned int)(offset + i));
         }
         printf("%X ", ptr[i]);
     }
@@ -603,7 +601,7 @@ static BaseType_t flash_hexdump_command_callback( char *pcWriteBuffer, size_t xW
     address = (unsigned int *)malloc(len);
 
     by25q64as_read_data(SPI_1, offset, (char *)address, len);
-    print_memory((unsigned int)address, len);
+    hexdump_flash_memort((unsigned int)address, len, offset);
     free(address);
     return pdTRUE;
 }
