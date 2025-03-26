@@ -82,8 +82,10 @@ ELF_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).elf
 HEX_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).hex
 LST_FILE = $(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).lst
 
-LD_OPTION := -lgcc -T$(LD_SCRIPT) -Wl,-Map=$(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).map,--cref,--gc-sections $(WRAP_FLAGS) $(CONFIG_STD_LIBS) $(ARCH_PARA)
-export CC AS CP SZ DP ARCH_PARA ELF_FILE HEX_FILE LST_FILE LD_OPTION PRJ_ROOT_DIR
+LD_OPTION := $(ARCH_PARA) -Wl,-Map=$(BUILD_OUT_PACKAGE)/$(BOARDS)-$(MCUS).map,--cref,--gc-sections,-lgcc,-T$(LD_SCRIPT),--print-memory-usage,$(CONFIG_STD_LIBS)
+LD_OPTION += $(WRAP_FLAGS)
+
+export CC AS CP SZ DP ARCH_PARA ELF_FILE HEX_FILE LST_FILE LD_OPTION PRJ_ROOT_DIR COMPILER_OPTION
 CROSS_COMPILER := $(TOOLCHAIN_SRC)/$(COMPILER)*$(COMPILER_KEYWORD)
 
 #####################################################################
@@ -169,7 +171,13 @@ INCLUDE_DIRS += -I$(PRJ_ROOT_DIR)/kernel/FreeRTOS/portable/GCC/$(subst ",,$(CONF
 endif
 
 C_FLAGS += $(INCLUDE_DIRS) -Wall -fdata-sections -ffunction-sections -fno-builtin-printf \
--fno-builtin-malloc -fno-builtin-free -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-memcmp -O2 $(ARCH_PARA)
+-fno-builtin-malloc -fno-builtin-free -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-memcmp $(CONFIG_OPTIMIZATION_PEVEL) $(ARCH_PARA)
+
+ifeq ($(CONFIG_NANO_PRINTF), y)
+NANO_PRINTF_DIR += $(CURDIR)/lib/nanoprintf
+C_FLAGS += -I$(NANO_PRINTF_DIR)
+endif
+
 export C_FLAGS DRV_FIND_DIR
 
 #sub Makefile, and the execution sequence is determined by the variable.

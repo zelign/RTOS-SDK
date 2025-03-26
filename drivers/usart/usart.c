@@ -8,7 +8,6 @@
 #include "initcall.h"
 #include "gpio.h"
 #include "led.h"
-#include "system.h"
 #include "autoconfig.h"
 
 #define RECEIVE_SIZE 128
@@ -74,7 +73,13 @@ static inline void set_stop_bit(enum usart_stop_bit bit)
     USART1_CR2 |= (bit << 12);
 }
 
-
+#ifdef CONFIG_NANO_PRINTF
+void _npf_putc(int c, void *priv)
+{
+    (void)priv;
+    putc_usart1((char)c);
+}
+#endif
 
 void usart1_init()
 {
@@ -110,8 +115,11 @@ void usart1_init()
 
     USART1_CR3 &= 0;
     USART1_ENABLE_UE;
+#ifdef CONFIG_NANO_PRINTF
+    nano_printf("\n[NANO]Uart 1 initialization successful!\n");
+#endif
 
-    printf("\nUart 1 intialize successful!\n");
+    printf("\nUart 1 initialization successful!\n");
    
 }
 

@@ -27,6 +27,15 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include "autoconfig.h"
+
+#ifdef CONFIG_NANO_PRINTF
+#define NANOPRINTF_VISIBILITY_STATIC
+#define NANOPRINTF_IMPLEMENTATION
+#include "nanoprintf.h"
+void _npf_putc(int c, void *priv);
+#define nano_printf(format, ...) npf_pprintf(&_npf_putc, NULL, format, ##__VA_ARGS__)
+#endif
 
 
 #define xPortSysTickHandler SysTick_Handler

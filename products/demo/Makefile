@@ -4,6 +4,7 @@
 
 include $(BUILD_OUT)/config.mk
 include $(PRJ_ROOT_DIR)/scripts/fonts_color.mk
+-include $(KCONFIG_CONFIG)
 
 SHELL := /bin/bash
 PWD := $(shell pwd)
@@ -18,8 +19,10 @@ BUILD_SOURCE += $(BUILD_OUT)/main.o
 
 DEMO_OBJ_DIR := $(BUILD_OUT)
 DEMO_C_OBJ := $(addprefix $(DEMO_OBJ_DIR)/, $(notdir $(DEMO_SRC_FILE:.c=.o)))
-VERBOSE = -v
-LD_OPTION += $(VERBOSE)
+
+ifeq ($(CONFIG_VERBOSE), y)
+LD_OPTION += -v
+endif
 
 all: info build_obj
 
@@ -36,7 +39,6 @@ $(ELF_FILE):
 
 $(HEX_FILE): $(ELF_FILE)
 	@ $(CP) -O ihex $< $@
-
 
 $(DEMO_C_OBJ): $(DEMO_SRC_FILE)
 	@ $(CC) $(C_FLAGS) -c $< -o $@

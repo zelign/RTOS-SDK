@@ -35,6 +35,9 @@ config FLOAT_ABI
 config INSTRCTION_SET
     string
     default "-mthumb" if Cortex_M4 || Cortex_M3
+config VERBOSE
+    bool "Verbose build output"
+    default n
 choice
     prompt "Whether use standard libraries"
     default NO_STD_LIBS
@@ -46,7 +49,36 @@ config NO_STD_LIBS
     bool "No"
 
 endchoice
+
+choice
+    prompt "Selet optimization level"
+    default OPTIMIZATION_O2
+config OPTIMIZATION_O0
+    bool "-O0"
+config OPTIMIZATION_O1
+    bool "-O1"
+config OPTIMIZATION_O2
+    bool "-O2"
+config OPTIMIZATION_O3
+    bool "-O3"
+config OPTIMIZATION_Os
+    bool "-Os"
+config OPTIMIZATION_Ofast
+    bool "-Ofast"
+config OPTIMIZATION_Og
+    bool "-Og"
+endchoice
+
 config STD_LIBS
     string
     default "-nostdlib" if NO_STD_LIBS
+config OPTIMIZATION_PEVEL
+    string
+    default "-O0" if OPTIMIZATION_O0
+    default "-O1" if OPTIMIZATION_O1
+    default "-O2" if OPTIMIZATION_O2
+    default "-O3" if OPTIMIZATION_O3
+    default "-Os" if OPTIMIZATION_Os
+    default "-Ofast" if OPTIMIZATION_Ofast
+    default "-Og" if OPTIMIZATION_Og
 endmenu

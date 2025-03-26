@@ -53,3 +53,7 @@ config EXT
     bool "Ext filesystem format"
 endchoice
 endif
+
+config NANO_PRINTF
+    bool "Nano printf support"
+    default n

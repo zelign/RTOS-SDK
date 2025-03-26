@@ -11,6 +11,7 @@ LIB_DIR := $(PWD)
 SM_LIB_DIR := $(LIB_DIR)/libc/sm_libc
 CLI_LIB_DIR := $(LIB_DIR)/FreeRTOS_CLI
 FS_LIB_DIR =
+NANO_PRINTF_DIR =
 
 #This variable is useful to obtain the directory named arch
 LIB_DIR_SINGLE := $(shell basename $(LIB_DIR))
