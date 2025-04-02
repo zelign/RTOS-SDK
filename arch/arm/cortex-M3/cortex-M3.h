@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef __CORTEX-M3_H__
-#define __CORTEX-M3_H__
+#ifndef __CORTEX_M3_H__
+#define __CORTEX_M3_H__
 
 /********************* Define the NVIC register ***********************/
 
@@ -14,4 +14,3 @@
 */
 
 #endif
-

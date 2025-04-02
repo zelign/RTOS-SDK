@@ -7,10 +7,10 @@
 
 char *strncat(char *dest, const char *src, size_t n)
 {
-	char *ret   = dest;
+	char *ret = dest;
 
 	dest += strlen(dest);
-	for (; n > 0 && *src != '\0' ; n--)
+	for (; n > 0 && *src != '\0'; n--)
 		*dest++ = *src++;
 
 	*dest = '\0';

@@ -9,20 +9,12 @@
 #include "system.h"
 static unsigned int inline get_sp_reg(void)
 {
-    unsigned int lr;
-    __asm volatile (
-        "mov %0, sp"
-        : "=r" (lr)
-        :
-        :
-    );
-    return lr;
+	unsigned int lr;
+	__asm volatile("mov %0, sp" : "=r"(lr) : :);
+	return lr;
 }
 void app_init(void)
 {
-    initcall_app_init();
+	initcall_app_init();
 	printf("App initial!\n");
 }
-
-
-

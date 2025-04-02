@@ -10,7 +10,7 @@ static void exti_source(enum gpio_reg gpio, enum gpio_pin pin)
 		((gpio / 0x400) << ((pin % 4) * 4));
 }
 
-static void exti_falling_edge_trigger (unsigned char line, bool flag)
+static void exti_falling_edge_trigger(unsigned char line, bool flag)
 {
 	if (flag)
 		*(volatile unsigned int *)EXTI_FTSR |= (ENABLE << line);
@@ -18,7 +18,7 @@ static void exti_falling_edge_trigger (unsigned char line, bool flag)
 		*(volatile unsigned int *)EXTI_FTSR &= ~(ENABLE << line);
 }
 
-static void exti_rising_edge_trigger (unsigned char line, bool flag)
+static void exti_rising_edge_trigger(unsigned char line, bool flag)
 {
 	if (flag)
 		*(volatile unsigned int *)EXTI_RTSR |= (ENABLE << line);
@@ -26,7 +26,7 @@ static void exti_rising_edge_trigger (unsigned char line, bool flag)
 		*(volatile unsigned int *)EXTI_RTSR &= ~(ENABLE << line);
 }
 
-static void exti_int_mask (unsigned char line, bool flag)
+static void exti_int_mask(unsigned char line, bool flag)
 {
 	if (flag)
 		*(volatile unsigned int *)EXTI_IMR |= (ENABLE << line);
@@ -34,7 +34,7 @@ static void exti_int_mask (unsigned char line, bool flag)
 		*(volatile unsigned int *)EXTI_IMR &= ~(ENABLE << line);
 }
 
-static void exti_evt_mask (unsigned char line, bool flag)
+static void exti_evt_mask(unsigned char line, bool flag)
 {
 	if (flag)
 		*(volatile unsigned int *)EXTI_EMR |= (ENABLE << line);
@@ -60,15 +60,10 @@ static void exti_clear_flag(unsigned char line)
 	*(volatile unsigned int *)EXTI_PR |= (ENABLE << line);
 }
 
-void exti_init_gpio(enum EXC_NUM exc_num, 
-			   enum priority_group prio_grp,
-			   unsigned char empt_prio,
-			   unsigned char sub_prio,
-			   enum gpio_reg gpio,
-			   enum gpio_pin pin,
-			   bool fall_edge,
-			   bool rise_edge,
-			   bool mask)
+void exti_init_gpio(enum EXC_NUM exc_num, enum priority_group prio_grp,
+		    unsigned char empt_prio, unsigned char sub_prio,
+		    enum gpio_reg gpio, enum gpio_pin pin, bool fall_edge,
+		    bool rise_edge, bool mask)
 {
 	syscfg_clk_enable();
 	NVIC_init(exc_num, prio_grp, empt_prio, sub_prio);
@@ -82,16 +77,14 @@ void exti_init_gpio(enum EXC_NUM exc_num,
 static bool led_status = ENABLE;
 void EXTI0_IRQHandler(void)
 {
-    if (exti_pend_state(0)) {
+	if (exti_pend_state(0)) {
 		exti_clear_flag(0);
-        if (led_status) {
-            led_light(LED_RED);
-            led_status = DISABLE;
-        } else {
-            led_off(LED_RED);
-            led_status = ENABLE;
-        }
-    }
+		if (led_status) {
+			led_light(LED_RED);
+			led_status = DISABLE;
+		} else {
+			led_off(LED_RED);
+			led_status = ENABLE;
+		}
+	}
 }
-
-

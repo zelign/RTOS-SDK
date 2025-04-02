@@ -10,7 +10,6 @@
 #include "board_cfg.h"
 #include "nvic.h"
 
-
 /**
  * @func: Select the oscillator for clock.
  * @para: osc the clock oscillator.

@@ -12,4 +12,3 @@ char *strcat(char *dst, const char *src)
 
 	return dst;
 }
-

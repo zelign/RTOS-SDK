@@ -29,7 +29,7 @@ void basic_server(void *par)
 	app_init();
 #ifdef CONFIG_LED
 	led_init(LED_RED, SET);
-    led_light(LED_RED);
+	led_light(LED_RED);
 #endif
 
 #ifdef CONFIG_KEY
@@ -38,15 +38,15 @@ void basic_server(void *par)
 
 #ifdef CONFIG_SPI
 #ifdef CONFIG_BY25Q64AS
-    spi_1_by25q64as_init();
+	spi_1_by25q64as_init();
 #endif
 #endif
-	exti_init_gpio(INT_EXT0, EMPT_1_SUB_3, 0, 2, KEY_PORT_UP, KEY_UP_PIN_UP, DISABLE, ENABLE, ENABLE);
+	exti_init_gpio(INT_EXT0, EMPT_1_SUB_3, 0, 2, KEY_PORT_UP, KEY_UP_PIN_UP,
+		       DISABLE, ENABLE, ENABLE);
 	printf("Welcome to the MicroSDK!\n");
-    cli_console_init();
+	cli_console_init();
 	vTaskDelete(NULL);
 }
-
 
 int main(int c, char *argv[])
 {
@@ -61,45 +61,42 @@ int main(int c, char *argv[])
 
 #else
 
-    printf("Start To FreeRTOS Task Creating!\n");
-	xTaskCreate( basic_server,
-                "basi",
-                configMINIMAL_STACK_SIZE,
-                NULL,
-                configMAX_PRIORITIES - 1,
-                NULL);
+	printf("Start To FreeRTOS Task Creating!\n");
+	xTaskCreate(basic_server, "basi", configMINIMAL_STACK_SIZE, NULL,
+		    configMAX_PRIORITIES - 1, NULL);
 
-    /* Start the scheduler. */
-    printf("Start Task Schedule!\n");
-    vTaskStartScheduler();
+	/* Start the scheduler. */
+	printf("Start Task Schedule!\n");
+	vTaskStartScheduler();
 #endif
-	while(1);
+	while (1)
+		;
 }
 
 void vApplicationIdleHook(void)
 {
-    printf("This is a Idle Task Hook function!\n");
+	printf("This is a Idle Task Hook function!\n");
 }
 
-void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,
-                                        StackType_t ** ppxIdleTaskStackBuffer,
-                                        uint32_t * pulIdleTaskStackSize )
+void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer,
+				   StackType_t **ppxIdleTaskStackBuffer,
+				   uint32_t *pulIdleTaskStackSize)
 {
-     /* If the buffers to be provided to the Idle task are declared inside this
+	/* If the buffers to be provided to the Idle task are declared inside this
     function then they must be declared static - otherwise they will be allocated on
     the stack and so not exists after this function exits. */
-    static StaticTask_t xIdleTaskTCB;
-    static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
+	static StaticTask_t xIdleTaskTCB;
+	static StackType_t uxIdleTaskStack[configMINIMAL_STACK_SIZE];
 
-    /* Pass out a pointer to the StaticTask_t structure in which the Idle task's
+	/* Pass out a pointer to the StaticTask_t structure in which the Idle task's
     state will be stored. */
-    *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
+	*ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
 
-    /* Pass out the array that will be used as the Idle task's stack. */
-    *ppxIdleTaskStackBuffer = uxIdleTaskStack;
+	/* Pass out the array that will be used as the Idle task's stack. */
+	*ppxIdleTaskStackBuffer = uxIdleTaskStack;
 
-    /* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
+	/* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
     Note that, as the array is necessarily of type StackType_t,
     configMINIMAL_STACK_SIZE is specified in words, not bytes. */
-    *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+	*pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }

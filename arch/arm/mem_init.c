@@ -11,15 +11,10 @@ extern unsigned char _heap_end[];
 
 void mem_init(void)
 {
-    HeapRegion_t xHeapRegions[] = {
-        {
-            _heap_start, (size_t)(_heap_end - _heap_start)
-        },
-        {
-            NULL, 0
-        }
-    };
+	HeapRegion_t xHeapRegions[] = {
+		{ _heap_start, (size_t)(_heap_end - _heap_start) }, { NULL, 0 }
+	};
 
-    vPortDefineHeapRegions( xHeapRegions );
+	vPortDefineHeapRegions(xHeapRegions);
 }
 BOOT_INIT_1(mem_init);

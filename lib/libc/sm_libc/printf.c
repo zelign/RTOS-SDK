@@ -13,26 +13,25 @@ static char *myitoa(int num, char *str, int radix)
 	unsigned unum;
 	int i = 0, j, k;
 
-	if (radix == 10 && num < 0)
-	{
+	if (radix == 10 && num < 0) {
 		unum = (unsigned)-num;
 		str[i++] = '-';
-	}
-	else unum = (unsigned)num;
+	} else
+		unum = (unsigned)num;
 
-	do
-	{
+	do {
 		str[i++] = myitoa_index[unum % (unsigned)radix];
 		unum /= radix;
 	} while (unum > 0);
 	str[i] = '\0';
 
-	if (str[0] == '-') k = 1;
-	else k = 0;
+	if (str[0] == '-')
+		k = 1;
+	else
+		k = 0;
 
 	char temp;
-	for (j = k; j <= (i - k - 1) / 2; j++)
-	{
+	for (j = k; j <= (i - k - 1) / 2; j++) {
 		temp = str[j];
 		str[j] = str[i - j - 1];
 		str[i - j - 1] = temp;
@@ -50,7 +49,7 @@ int printf(const char *fmt, ...)
 
 	va_start(args, fmt);
 
-	while (fmt_len --) {
+	while (fmt_len--) {
 		ch = *fmt++;
 
 		// read in the format string
@@ -66,8 +65,7 @@ int printf(const char *fmt, ...)
 			continue;
 		}
 
-		if (ch == 'c' || ch == 'C')
-		{
+		if (ch == 'c' || ch == 'C') {
 			char *cc = va_arg(args, char *);
 			putc_usart1(*cc);
 		} else if (ch == 's' || ch == 'S') {

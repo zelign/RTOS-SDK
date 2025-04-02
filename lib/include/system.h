@@ -34,12 +34,12 @@
 #define NANOPRINTF_IMPLEMENTATION
 #include "nanoprintf.h"
 void _npf_putc(int c, void *priv);
-#define nano_printf(format, ...) npf_pprintf(&_npf_putc, NULL, format, ##__VA_ARGS__)
+#define nano_printf(format, ...) \
+	npf_pprintf(&_npf_putc, NULL, format, ##__VA_ARGS__)
 #endif
 
-
 #define xPortSysTickHandler SysTick_Handler
-#define xPortPendSVHandler  PendSV_Handler
+#define xPortPendSVHandler PendSV_Handler
 #define vPortSVCHandler SVC_Handler
 
 #ifndef SIZE_MAX
@@ -47,33 +47,33 @@ void _npf_putc(int c, void *priv);
 #endif
 
 #ifndef REG32
-#define REG32(x)    *(volatile unsigned int *)(x)
+#define REG32(x) *(volatile unsigned int *)(x)
 #endif
 
 #define NULL ((void *)0)
 
 typedef enum _bool {
-    ENABLE = 1,
-    DISABLE = 0,
-}bool;
+	ENABLE = 1,
+	DISABLE = 0,
+} bool;
 
 enum {
-    FALSE = 0,
-    TRUE,
+	FALSE = 0,
+	TRUE,
 };
 
-#define write32(reg, val) \
-    do { \
-        *(reg) &= val; \
-    } while(0);
+#define write32(reg, val)      \
+	do {                   \
+		*(reg) &= val; \
+	} while (0);
 
 char *gets_usart1(void);
-char getc_usart1_loop (bool *flag);
+char getc_usart1_loop(bool *flag);
 void putc_usart1(char c);
 void puts_usart1(char *s);
 void *pvPortMalloc(size_t xWantedSize);
-void vPortFree(void * pv);
-void *pvPortCalloc(size_t xNum,size_t xSize);
+void vPortFree(void *pv);
+void *pvPortCalloc(size_t xNum, size_t xSize);
 
 void get_privilege_level(void);
 void set_privilege_level(bool level);

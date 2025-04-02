@@ -9,11 +9,9 @@
 
 typedef void (*initcall_fp)(void);
 
-#define _INIT_CALL_MODLE(fuc, level) \
-static volatile initcall_fp \
-_initcall_##fuc \
-__attribute__((__used__)) \
-__attribute__((section(".init_call."level))) = (initcall_fp)fuc
+#define _INIT_CALL_MODLE(fuc, level)                                          \
+	static volatile initcall_fp _initcall_##fuc __attribute__((__used__)) \
+	__attribute__((section(".init_call." level))) = (initcall_fp)fuc
 
 #define BOOT_INIT_1(x) _INIT_CALL_MODLE(x, "boot_1")
 #define BOOT_INIT_2(x) _INIT_CALL_MODLE(x, "boot_2")
@@ -22,7 +20,6 @@ __attribute__((section(".init_call."level))) = (initcall_fp)fuc
 #define APP_INIT_1(x) _INIT_CALL_MODLE(x, "application_1")
 #define APP_INIT_2(x) _INIT_CALL_MODLE(x, "application_2")
 #define APP_INIT_3(x) _INIT_CALL_MODLE(x, "application_3")
-
 
 extern initcall_fp _boot_init_start[];
 extern initcall_fp _boot_init_end[];

@@ -9,8 +9,8 @@
 #include "gpio.h"
 
 #define STM32_F407_PZ_CORE_BOARD
-#define KEY_ON    1U
-#define KEY_OFF   0U
+#define KEY_ON 1U
+#define KEY_OFF 0U
 
 #ifdef STM32_F407_PZ_CORE_BOARD
 #define KEY_PORT_DOWN GPIOE

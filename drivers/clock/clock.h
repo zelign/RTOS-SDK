@@ -13,8 +13,4 @@
 void clock_init(void);
 void flash_access_frq(enum flash_access_f faq);
 
-
-
 #endif // ! __CLOCK_H__
-
-

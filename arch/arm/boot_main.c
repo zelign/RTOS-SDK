@@ -9,13 +9,13 @@
 
 void boot_init(void)
 {
-    initcall_boot_init();
-    puts_usart1("Boot initial is Successful");
+	initcall_boot_init();
+	puts_usart1("Boot initial is Successful");
 }
 
 void exit_error()
 {
-    puts_usart1("exit_error");
-    while(1);
+	puts_usart1("exit_error");
+	while (1)
+		;
 }
-

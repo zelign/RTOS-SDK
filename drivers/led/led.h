@@ -12,12 +12,12 @@
 #define STM32_F407_PZ_CORE_BOARD
 
 #ifdef STM32_F407_PZ_CORE_BOARD
-#define LED_RED    1U
-#define LED_RED_PORT   GPIOF
-#define LED_RED_PIN    GPIO_PIN_9
-#define LED_GREEN    2U
-#define LED_GREEN_PORT   GPIOF
-#define LED_GREEN_PIN    GPIO_PIN_10
+#define LED_RED 1U
+#define LED_RED_PORT GPIOF
+#define LED_RED_PIN GPIO_PIN_9
+#define LED_GREEN 2U
+#define LED_GREEN_PORT GPIOF
+#define LED_GREEN_PIN GPIO_PIN_10
 #else
 #define LED_RED
 #define LED_GREEN
