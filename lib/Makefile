@@ -1,6 +1,7 @@
 # Copyright (c) 2021-2022 Simon. All rights reserved.
 
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: 
+
 include $(PRJ_ROOT_DIR)/scripts/fonts_color.mk
 include $(BUILD_OUT)/config.mk
 include $(PRJ_ROOT_DIR)/output/.config
@@ -8,10 +9,13 @@ include $(PRJ_ROOT_DIR)/output/.config
 SHELL := /bin/bash
 PWD := $(shell pwd)
 LIB_DIR := $(PWD)
+
+#define the subdirectories to build
 SM_LIB_DIR := $(LIB_DIR)/libc/sm_libc
 CLI_LIB_DIR := $(LIB_DIR)/FreeRTOS_CLI
 FS_LIB_DIR =
 NANO_PRINTF_DIR =
+USB_LIB_DIR =
 
 #This variable is useful to obtain the directory named arch
 LIB_DIR_SINGLE := $(shell basename $(LIB_DIR))
@@ -35,6 +39,8 @@ CLI_OBJ = $(addprefix $(CLI_OBJ_DIR)/, $(notdir $(CLI_C_FILE:.c=.o)))
 #define obj file path
 BUILD_SOURCE += $(SM_LIB_C_OBJ) $(CLI_OBJ) $(SM_LIB_S_OBJ)
 
+#define file system related, the purpose of this format is to adjust different
+#type file systems
 ifeq ($(CONFIG_FS), y)
 FS_LIB_DIR += $(LIB_DIR)/file_system
 ifeq ($(CONFIG_FILEX), y)
@@ -45,8 +51,12 @@ BUILD_SOURCE += $(FX_OBJ)
 endif
 endif
 
+#define usb related
+ifeq ($(CONFIG_USB_LIB), y)
+USB_LIB_DIR += $(LIB_DIR)/usb
+endif
 
-all: info $(SM_LIB_C_OBJ) $(SM_LIB_S_OBJ) $(CLI_OBJ) $(FS_LIB_DIR)
+all: info $(SM_LIB_C_OBJ) $(SM_LIB_S_OBJ) $(CLI_OBJ) $(FS_LIB_DIR) $(USB_LIB_DIR)
 	@ echo "BUILD_SOURCE := $(BUILD_SOURCE)" >> $(BUILD_OUT)/config.mk
 	@ echo -e "	$(CYAN)Compile OK! $(LIB_LIBC_C_FILEDIR)$(END)"
 info:
@@ -64,7 +74,10 @@ $(CLI_OBJ_DIR)/%.o: $(CLI_LIB_DIR)/%.c
 $(FS_LIB_DIR):
 	$(Q) $(MAKE) all -C $@
 
-.PHONY:info all $(FS_LIB_DIR)
+$(USB_LIB_DIR):
+	$(Q) $(MAKE) all -C $@
+
+.PHONY:info all $(FS_LIB_DIR) $(USB_LIB_DIR)
 
 
 

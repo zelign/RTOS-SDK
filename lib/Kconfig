@@ -57,3 +57,26 @@ endif
 config NANO_PRINTF
     bool "Nano printf support"
     default n
+
+config USB_LIB
+    bool "USB support"
+    default y
+
+if USB_LIB
+
+choice
+    prompt "USB Libraries Selection"
+    default STM32_USB_LIB
+
+config STM32_USB_LIB
+    bool "STMicro USB library"
+config Cherry_USB_LIB
+    bool "Cherry USB library"
+endchoice
+config USB
+    string
+    default STM32_USB if STM32_USB_LIB
+    default "Cheery_USB" if Cherry_USB_LIB
+    help
+      USB lib name
+endif

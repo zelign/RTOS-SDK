@@ -7,17 +7,17 @@ include $(PRJ_ROOT_DIR)/output/.config
 
 SHELL := /bin/bash
 PWD := $(shell pwd)
-FS_DIR = $(PWD)
-FS_SUB_DIR =
+USB_DIR = $(PWD)
+USB_SUB_DIR =
 
-ifeq ($(CONFIG_FILEX), y)
-FS_SUB_DIR += $(FS_DIR)/FileX
+ifeq ($(CONFIG_STM32_USB_LIB), y)
+USB_SUB_DIR += $(USB_DIR)/$(subst ",,$(CONFIG_USB))
 endif
 
-all: $(FS_SUB_DIR)
+all: $(USB_SUB_DIR)
 
-$(FS_SUB_DIR):
-	@ echo -e "	$(GREEN)File System ...$(END)"
+$(USB_SUB_DIR):
+	@ echo -e "	$(GREEN)$(subst ",,$(CONFIG_USB)) ...$(END)"
 	$(Q) $(MAKE) all -C $@
 
-.PHONY: all $(FS_SUB_DIR)
+.PHONY: all $(USB_SUB_DIR)
